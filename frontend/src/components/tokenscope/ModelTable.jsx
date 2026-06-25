@@ -1,6 +1,8 @@
 import { TOOL_LABEL, formatNumber, formatCost } from "@/lib/tokenApi";
+import { useLang } from "@/lib/i18n";
 
 export default function ModelTable({ summary }) {
+  const { t } = useLang();
   const rows = summary?.by_model || [];
   return (
     <div
@@ -12,7 +14,7 @@ export default function ModelTable({ summary }) {
           // breakdown_by_model
         </div>
         <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-zinc-500">
-          {rows.length} models
+          {t("model.count", { n: rows.length })}
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -36,7 +38,7 @@ export default function ModelTable({ summary }) {
             {rows.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-4 py-8 text-center text-zinc-600">
-                  no data · import a CSV/JSON or load demo data
+                  {t("model.no_data")}
                 </td>
               </tr>
             )}
