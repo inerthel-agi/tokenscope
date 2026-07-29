@@ -4,23 +4,23 @@
 
 <h1 align="center">TokenScope</h1>
 
-<p align="center"><strong>Local-first token-usage &amp; subscription tracker for Claude Code and Codex.</strong></p>
+<p align="center"><strong>Token-usage and subscription tracking for Claude Code and Codex.</strong></p>
 
-TokenScope reads your own local session files and shows — per project, per model,
-over any time range — how many tokens you've spent, the estimated cost, and how much
+TokenScope reads local session files and shows, per project and model,
+how many tokens were used, the estimated cost, and how much
 of your **subscription quota** (Claude 5h / weekly, Codex 5h / weekly / spark / credits)
-is left. It runs entirely on your machine: no cloud collector, no telemetry.
+is left. Session parsing runs on the local machine without a cloud collector or telemetry.
 
 It ships in two forms:
 
 - a standalone **Windows tray app** (`TokenScope.exe`) — a native, black-OLED dashboard
-  window with a system-tray icon, zero dependencies to install;
+  window with a system-tray icon and no separately installed runtime;
 - the original **React + FastAPI web app** — same data plus manual import (CSV/JSON),
   stored history, daily thresholds and charts.
 
 ---
 
-## Features
+## Usage data
 
 - **Usage by project** — tokens & cost grouped by the working directory of each session.
 - **Breakdown by model** — input / output / total / calls / cost per model.
@@ -57,7 +57,7 @@ The **only** outbound network call is the optional Anthropic OAuth *usage* read.
 
 ## Quick start
 
-### 1. Tray app (recommended — no install)
+### 1. Tray app
 
 ```text
 bin\TokenScope.exe
@@ -69,8 +69,8 @@ Double-click it:
 - a tray icon appears (tooltip shows live `C 5h %` / `X 5h %`);
 - **closing the window** hides it to the tray → right-click the tray to **Show / Quit**.
 
-Binds to `127.0.0.1` only; falls back to the default browser on the rare host without
-the WebView2 runtime. See [`desktop/README.md`](desktop/README.md) for details and to
+Binds to `127.0.0.1` only. If WebView2 is unavailable, it opens the default browser.
+See [`desktop/README.md`](desktop/README.md) for details and to
 build it yourself (`cd desktop && build.bat`).
 
 ### 2. Web app (dev)
@@ -115,16 +115,13 @@ Reader toggles (used by the tray app and backend):
 
 ## Privacy & security
 
-- **Local-first.** All parsing happens on your machine; the desktop server binds to
+- **Local processing.** All parsing happens on your machine; the desktop server binds to
   `127.0.0.1` and exposes only read-only endpoints.
-- **No secret leakage.** OAuth tokens / API keys are never logged, returned in API
+- **Credential handling.** OAuth tokens / API keys are not logged, returned in API
   responses, or persisted in plaintext beyond their original credential file. Status
   responses expose only boolean availability flags and percentages.
-- **No telemetry.** Nothing is sent anywhere except the optional official Anthropic
-  usage read.
-
-A 5-dimension security audit (secrets, XSS, network/SSRF/TLS, file I/O, code execution)
-found **no exploitable vulnerabilities** under this threat model.
+- **Telemetry.** No telemetry is collected. The optional Anthropic usage request is
+  the only outbound usage call.
 
 ---
 

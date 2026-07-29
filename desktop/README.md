@@ -1,12 +1,10 @@
 # TokenScope — Desktop app
 
-A lightweight desktop app that shows your **live local token usage** (Claude Code +
-Codex) and **subscription utilization** (5h / weekly / Sonnet / Spark / credits) in
-a dark dashboard — no MongoDB, no Node, no cloud.
+A desktop application that displays local token usage for Claude Code and Codex,
+plus subscription utilization for 5h, weekly, Sonnet, Spark, and credit limits.
 
-It reuses the verified backend reader `../backend/local_sources.py` and reads only
-local files: `~/.claude`, `~/.codex`, `~/.claude-rpc`. Nothing is sent anywhere; the
-only network call is the optional Anthropic OAuth *usage* read (same as claude-rpc).
+It uses `../backend/local_sources.py` to read `~/.claude`, `~/.codex`, and
+`~/.claude-rpc`. The optional Anthropic OAuth usage request is its only network call.
 
 ## Use the prebuilt Windows exe
 
@@ -19,9 +17,8 @@ Double-click it:
 - a tray icon appears (tooltip shows live `C 5h %` / `X 5h %`),
 - **closing the window** minimizes it to the tray; **right-click the tray → Show / Quit**.
 
-The dashboard auto-refreshes every 30s; use the 7d / 30d / 90d buttons to change the
-range. (On the rare host without the WebView2 runtime it falls back to opening the
-default browser.)
+The dashboard refreshes every 30 seconds; use the 7d / 30d / 90d buttons to change
+the range. If WebView2 is unavailable, the application opens the default browser.
 
 ## Build it yourself on Windows
 
