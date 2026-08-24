@@ -195,6 +195,6 @@ Initial release: desktop tray app, FR/EN i18n, themes, de-branded. Local-first t
 and subscription tracker for Claude Code and Codex, shipping as a Windows tray app and a
 React + FastAPI web app.
 
-[1.2.0]: https://github.com/imnotStealthy/tokenscope/releases/tag/v1.2.0
-[1.1.0]: https://github.com/imnotStealthy/tokenscope/releases/tag/v1.1.0
-[1.0.0]: https://github.com/imnotStealthy/tokenscope/releases/tag/v1.0.0
+[1.2.0]: https://github.com/stealthsrc/tokenscope/releases/tag/v1.2.0
+[1.1.0]: https://github.com/stealthsrc/tokenscope/releases/tag/v1.1.0
+[1.0.0]: https://github.com/stealthsrc/tokenscope/releases/tag/v1.0.0
