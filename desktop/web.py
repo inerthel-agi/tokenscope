@@ -255,28 +255,14 @@ INDEX_HTML = r"""<!doctype html>
       <div class="body">
         <p data-i18n="about_body">TokenScope was built to monitor token consumption.</p>
         <div class="brandbox">
-          <svg class="se" xmlns="http://www.w3.org/2000/svg" viewBox="-0.5 -0.5 12 8" role="img" aria-label="StealthyLabs" shape-rendering="crispEdges">
-            <defs><g id="se">
-              <rect x="0" y="0" width="5" height="1"/><rect x="0" y="1" width="1" height="2"/><rect x="0" y="3" width="5" height="1"/><rect x="4" y="4" width="1" height="2"/><rect x="0" y="6" width="5" height="1"/>
-              <rect x="6" y="0" width="1" height="7"/><rect x="7" y="0" width="4" height="1"/><rect x="7" y="3" width="3" height="1"/><rect x="7" y="6" width="4" height="1"/>
-            </g></defs>
-            <use href="#se" x="0.28" fill="#1fd8ff"/><use href="#se" x="-0.2" fill="#ff2e6e" opacity="0.4"/><use href="#se" fill="#ededed"/>
+          <svg class="se" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8" role="img" aria-label="Inerthel">
+            <rect x="5.5" y="0.5" width="1" height="7" rx="0.5" fill="#ededed"/>
           </svg>
-          <svg class="wm" xmlns="http://www.w3.org/2000/svg" viewBox="-0.5 -0.5 48.5 8" role="img" aria-label="Stealthy" shape-rendering="crispEdges">
-            <defs><g id="wm">
-              <rect x="0" y="0" width="5" height="1"/><rect x="0" y="1" width="1" height="2"/><rect x="0" y="3" width="5" height="1"/><rect x="4" y="4" width="1" height="2"/><rect x="0" y="6" width="5" height="1"/>
-              <rect x="6" y="0" width="5" height="1"/><rect x="8" y="1" width="1" height="6"/>
-              <rect x="12" y="0" width="1" height="7"/><rect x="13" y="0" width="4" height="1"/><rect x="13" y="3" width="3" height="1"/><rect x="13" y="6" width="4" height="1"/>
-              <rect x="18" y="1" width="1" height="6"/><rect x="22" y="1" width="1" height="6"/><rect x="19" y="0" width="3" height="1"/><rect x="19" y="3" width="3" height="1"/>
-              <rect x="24" y="0" width="1" height="7"/><rect x="25" y="6" width="4" height="1"/>
-              <rect x="30" y="0" width="5" height="1"/><rect x="32" y="1" width="1" height="6"/>
-              <rect x="36" y="0" width="1" height="7"/><rect x="40" y="0" width="1" height="7"/><rect x="37" y="3" width="3" height="1"/>
-              <rect x="42" y="0" width="1" height="3"/><rect x="46" y="0" width="1" height="3"/><rect x="43" y="2" width="3" height="1"/><rect x="44" y="3" width="1" height="4"/>
-            </g></defs>
-            <use href="#wm" x="0.28" fill="#1fd8ff"/><use href="#wm" x="-0.22" fill="#ff2e6e" opacity="0.4"/><use href="#wm" fill="#ededed"/>
+          <svg class="wm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 8" role="img" aria-label="Inerthel">
+            <text x="0" y="7" fill="#ededed" font-family="Arial, Helvetica, sans-serif" font-size="7" font-weight="700" letter-spacing="0.2">INERTHEL</text>
           </svg>
         </div>
-        <span class="by" data-i18n="about_by">by StealthyLabs</span>
+        <span class="by" data-i18n="about_by">by Inerthel</span>
         <div>
           <a class="gh" href="https://github.com/inerthel-agi" target="_blank" rel="noopener noreferrer">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -315,7 +301,7 @@ const I18N={
     bud_real:"real spend (api)", bud_est:"est. (subscription)", today:"today", month:"this month",
     over:" · over {x}", daily_budget:"daily budget ($)", monthly_budget:"monthly budget ($)",
     now:"now", in_prefix:"in", u_d:"d", u_h:"h", u_m:"m",
-    about_title:"// about", about_by:"by StealthyLabs",
+    about_title:"// about", about_by:"by Inerthel",
     about_body:"TokenScope was built to monitor token consumption and usage across Claude Code and Codex — to see, in one place and in real time, how many tokens I burn per project and per model, what it costs, and how much of my subscription quota is left. Local-first: it only reads my own session files, with no telemetry.",
     footer:"TokenScope · live from ~/.claude & ~/.codex · local-first · no external telemetry" },
   fr:{ brand_sub:"tray · usage local en direct", connecting:"connexion…", loading:"chargement {r}…",
@@ -333,7 +319,7 @@ const I18N={
     bud_real:"dépense réelle (api)", bud_est:"est. (abonnement)", today:"aujourd'hui", month:"ce mois",
     over:" · dépassé de {x}", daily_budget:"budget quotidien ($)", monthly_budget:"budget mensuel ($)",
     now:"maintenant", in_prefix:"dans", u_d:"j", u_h:"h", u_m:"m",
-    about_title:"// à propos", about_by:"par StealthyLabs",
+    about_title:"// à propos", about_by:"par Inerthel",
     about_body:"TokenScope a été créé pour monitorer la consommation et l'usage des tokens sur Claude Code et Codex — voir, au même endroit et en temps réel, combien de tokens je consomme par projet et par modèle, ce que ça coûte, et combien il reste de mon quota d'abonnement. Local-first : il lit uniquement mes propres fichiers de session, sans aucune télémétrie.",
     footer:"TokenScope · en direct depuis ~/.claude & ~/.codex · local-first · aucune télémétrie externe" }
 };
