@@ -4,6 +4,55 @@ All notable changes to TokenScope are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Rust/Tauri app** (`tauri/`): same dashboard and tray popup, 6.8 MB exe, built by
+  `.github/workflows/build-tauri.yml` on `v*` tags.
+- **Price overrides without rebuilding** (Tauri app): `~/.tokenscope/pricing.json`, e.g.
+  `{"models": [{"match": "ox-alpha", "input": 3, "output": 15, "from": "2026-12-01"}]}`.
+  `match` is a case-insensitive part of the model id (longest wins); `from`/`until` are optional
+  local dates. Edits apply on the next refresh.
+- Models without a known price show a **price unknown** badge (and a count under the cost)
+  instead of a silent $0.
+- Dashboard: KPI change vs the previous period, month-end budget forecast, 12-month activity
+  calendar, click a project to filter everything, animated numbers and chart, loading skeletons.
+
+### Changed
+
+- Google's announced Gemini price changes apply on their date in the Tauri app (4 Argon $4 / $20
+  from 2026-12-01; 3.6 / 3.8 Flash $1.50 / $7.50 from 2027-01-01).
+
+- **Pricing refresh (rates checked 2026-11-01).** Cost estimates now cover the current models:
+  - Claude Opus 5.5 $4 / $20, Sonnet 5 / 5.5 $2 / $10, Haiku 5.5 $0.10 / $0.50 (prompts up to
+    100K tokens; $0.50 / $2.50 above), Opus 5 $5 / $25, Fable / Mythos 5.1 $10 / $50.
+    Cache reads use the per-model multiplier (0.05x Opus/Sonnet 5.5, 0.025x Fable/Mythos 5.1).
+  - GPT-6 Astra $10 / $50, GPT-6 and 6.1 Sol $2 / $10, GPT-6.1 Terra $1 / $5, GPT-6 Luna
+    $0.10 / $0.50 (cached input 0.05x on GPT-6.1). GPT-5.6 rates lowered to Sol $4 / $20,
+    Terra $2 / $12, Luna $0.20 / $1.20. GPT-5.2 corrected to $1.75 / $14; GPT-5 / 5.1 added.
+  - Gemini 4 Argon $2 / $10, Gemini 3.6 / 3.8 Flash $0.75 / $3.75, Gemini 3.5 Flash-Lite
+    $0.30 / $2.50, Gemini 2.5 Pro / Flash rates. Scheduled Google increases (Dec 2026 /
+    Jan 2027) are not applied yet.
+
+### Removed
+
+- The StealthyLabs logo and byline in the About card.
+
+### Fixed
+
+- **Codex history mostly missing.** Codex now stores finished sessions as zstd-compressed
+  `rollout-*.jsonl.zst` files (and moves some to `archived_sessions/`); only the live session
+  stayed readable. Both are now read, each session counted once. Python needs 3.14+
+  (`compression.zstd`); older interpreters skip compressed files.
+- GPT-5.3-Codex-Spark limits are no longer shown (the model was retired).
+- **Claude subscription card stuck on "waiting for usage data".** The Claude Code sign-in token
+  expires after ~8 h when the `claude` CLI is idle, and TokenScope only read it. When it has
+  expired, TokenScope now runs `claude auth status` (at most every 10 min) so the CLI renews
+  and saves the token itself; TokenScope still never touches the refresh token.
+- Dated Claude ids such as `claude-opus-4-20250514` and legacy `claude-3-5-haiku-*` ids now
+  get their real tier instead of a newer model's rate.
+
 ## [1.4.1] - 2026-07-09
 
 ### Changed
