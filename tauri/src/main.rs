@@ -1,5 +1,5 @@
 //! TokenScope (Tauri): native dashboard window + tray icon with a quota popup.
-//! The UI is the same HTML as the Python app (`desktop/web.py`), extracted by build.rs.
+//! The UI pages live in `ui-src/`; build.rs copies them to `ui/` with the API shim.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod alerts;

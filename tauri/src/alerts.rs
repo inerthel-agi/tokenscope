@@ -1,5 +1,5 @@
 //! Background loop: tray tooltip, quota notifications and a pressure badge on the icon.
-//! Port of `_title_loop` in `desktop/tray.py`. Alerts use hysteresis (alert at >=90% used /
+//! Alerts use hysteresis (alert at >=90% used /
 //! <=10% left, re-arm below 85% / above 15%) so a window hovering at the line does not spam.
 use serde_json::Value;
 use std::collections::HashSet;
@@ -62,7 +62,7 @@ pub fn evaluate(u: &Value, alerted: &mut HashSet<String>) -> Report {
     Report { tooltip, badge, notify }
 }
 
-/// App icon with a colored dot top-right (same geometry as `desktop/icon.py`, 256-px base).
+/// App icon with a colored dot top-right (256-px base geometry).
 pub fn badge_icon(base: &Image<'_>, badge: Badge) -> Image<'static> {
     let (w, h) = (base.width(), base.height());
     let mut px = base.rgba().to_vec();

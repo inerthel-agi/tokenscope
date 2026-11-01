@@ -2,139 +2,117 @@
   <img src="assets/tokenscope-logo.png" alt="TokenScope logo" width="140" />
 </p>
 
-<h1 align="center">TokenScope</h1>
+# TokenScope
 
-<p align="center"><strong>Token-usage and subscription tracking for Claude Code and Codex.</strong></p>
+TokenScope reads the local session files of Claude Code, Codex and Antigravity and shows
+tokens, estimated cost and remaining subscription quota per project and per model.
+It runs as a Windows desktop app with a tray icon (`tauri/`), plus a React + FastAPI web app
+with manual import and stored history (`frontend/`, `backend/`).
 
-TokenScope reads local session files and shows, per project and model,
-how many tokens were used, the estimated cost, and how much
-of your **subscription quota** (Claude 5h / weekly, Codex 5h / weekly / spark / credits)
-is left. Session parsing runs on the local machine without a cloud collector or telemetry.
+## Requirements
 
-It ships in two forms:
+Desktop app:
 
-- a standalone **Windows tray app** (`TokenScope.exe`) — a native, black-OLED dashboard
-  window with a system-tray icon and no separately installed runtime;
-- the original **React + FastAPI web app** — same data plus manual import (CSV/JSON),
-  stored history, daily thresholds and charts.
+- Windows 10 or 11 with the WebView2 runtime. The title bar matches the page colors on Windows 11 only.
+- To build: stable Rust toolchain. TODO: no minimum Rust version is pinned.
 
----
+Web app:
 
-## Usage data
+- Python with the packages in `backend/requirements.txt`, and a running MongoDB.
+  Reading compressed Codex sessions (`*.jsonl.zst`) needs Python 3.14 or later.
+- Node.js with `yarn` or `npm` for `frontend/`.
 
-- **Usage by project** — tokens & cost grouped by the working directory of each session.
-- **Breakdown by model** — input / output / total / calls / cost per model.
-- **Cost estimation** — priced per model against the official Anthropic & OpenAI rates
-  (cache reads at 0.1×; Codex output already includes reasoning — not double-counted).
-- **Subscription utilization** — Claude (5h / weekly / Sonnet) read from the Anthropic
-  OAuth usage API; Codex (5h / weekly / spark / credits) read from rollout rate-limits,
-  shown as **remaining %** (100 % = full, 0 % = exhausted).
-- **API vs subscription detection** — auto-labels Claude as `subscription` or `api`
-  (Claude Platform / pay-as-you-go) and tracks a daily / monthly **budget** in either mode.
-- **Time ranges** — `24h · 7d · 30d · 90d · LIFE` (lifetime = every session since you
-  started using Claude Code / Codex). Lifetime is pre-warmed in the background.
-- **All / Claude / Codex** filter and collapsible sections.
-- **FR / EN** language toggle (English default; preference persisted).
-- Real-time refresh; live clock and quota count-downs.
+## Install
 
----
-
-## Architecture
-
-| Surface | Stack | Role |
-| --- | --- | --- |
-| `desktop/` | Python stdlib HTTP + pywebview + pystray, packaged with PyInstaller | The standalone tray `.exe` — native window, embedded dashboard, local-only |
-| `frontend/` | React 19 (CRA + craco), Tailwind, Recharts | Full web UI: live local view + stored history, import, thresholds, charts |
-| `backend/` | FastAPI + MongoDB (motor) | REST API for the web app; serves both stored and local data |
-| `backend/local_sources.py` | pure Python (shared) | The reader: parses `~/.claude` & `~/.codex` sessions, prices them, and fetches subscription utilization. Used by **both** the backend and the tray app |
-
-**Data sources** (read-only, on your machine):
-`~/.claude/projects/**/*.jsonl`, `~/.claude/.credentials.json` (OAuth token),
-`~/.codex/sessions/**/rollout-*.jsonl`, and the cache at `~/.claude-rpc`.
-The **only** outbound network call is the optional Anthropic OAuth *usage* read.
-
----
-
-## Quick start
-
-### 1. Tray app
-
-```text
-bin\TokenScope.exe
-```
-
-Double-click it:
-
-- opens as a **native application window** (not a browser tab);
-- a tray icon appears (tooltip shows live `C 5h %` / `X 5h %`);
-- **closing the window** hides it to the tray → right-click the tray to **Show / Quit**.
-
-Binds to `127.0.0.1` only. If WebView2 is unavailable, it opens the default browser.
-See [`desktop/README.md`](desktop/README.md) for details and to
-build it yourself (`cd desktop && build.bat`).
-
-### 2. Web app (dev)
+Desktop app, from source:
 
 ```bash
-# backend  (needs a running MongoDB; set MONGO_URL & DB_NAME)
+cd tauri
+cargo build --release
+```
+
+The executable is `tauri/target/release/tokenscope.exe`.
+Tagged releases (`v*`) attach a prebuilt `TokenScope-Tauri.exe`, built by `.github/workflows/build-tauri.yml`.
+
+Web app:
+
+```bash
 cd backend
 pip install -r requirements.txt
 uvicorn server:app --reload --port 8000
-
-# frontend
-cd frontend
-yarn install        # or: npm install
-yarn start          # or: npm start  -> http://localhost:3000
 ```
 
-Use the **local** source toggle for live `~/.claude` / `~/.codex` data, or **stored**
-for imported history.
+```bash
+cd frontend
+yarn install
+yarn start
+```
 
----
+## Usage
+
+Start `tokenscope.exe`:
+
+- The dashboard window opens. Closing it keeps the app in the tray.
+- Left-click the tray icon to open the quota popup. Right-click it for **Open dashboard** and **Quit**.
+- `tokenscope.exe --minimized` starts in the tray only. The popup's **Start with Windows** option registers this command.
+- Select a range (`24h`, `7d`, `30d`, `90d`, `life`) and a tool in the sidebar.
+- Click a project row to filter the whole dashboard to it. Click the project chip to clear the filter.
+- **Export CSV** and **Export JSON** save the current summary to `~/Downloads`.
+- A Windows notification appears when a Claude quota window reaches 90 % used, or a Codex window drops to 10 % left.
+
+Data sources, read-only:
+
+| Tool | Files |
+| --- | --- |
+| Claude Code | `~/.claude/projects/**/*.jsonl`, `~/.claude/.credentials.json` (OAuth token for quotas) |
+| Codex | `~/.codex/sessions/` and `~/.codex/archived_sessions/` (`rollout-*.jsonl`, `rollout-*.jsonl.zst`), `~/.codex/auth.json`, `~/.codex/config.toml` |
+| Antigravity | `~/.gemini/antigravity/conversations/*.db` |
+
+The only outbound request is the Anthropic OAuth usage read for Claude quotas.
+When the stored token has expired, the app runs `claude auth status` (at most once per 10 minutes) so the Claude CLI renews it.
 
 ## Configuration
 
-Backend environment variables:
+Price overrides, read by the desktop app from `~/.tokenscope/pricing.json` and reloaded when the file changes:
 
-| Var | Default | Purpose |
+```json
+{"models": [{"match": "ox-alpha", "input": 3, "output": 15, "from": "2026-12-01"}]}
+```
+
+`match` is a case-insensitive part of the model id; the longest match wins. `input` and `output` are USD per million tokens. `from` (inclusive) and `until` (exclusive) are optional local dates.
+
+Environment variables:
+
+| Name | Default | Effect |
 | --- | --- | --- |
-| `MONGO_URL` | — (*required*) | MongoDB connection string |
-| `DB_NAME` | — (*required*) | Database name |
-| `TOKENSCOPE_API_KEY` | *empty* | If set, write/mutating endpoints require `X-API-Key` |
-| `CORS_ORIGINS` | `*` | Comma-separated allowed origins (pin this if deployed) |
-| `MAX_UPLOAD_BYTES` / `MAX_IMPORT_ROWS` | 5 MB / 50 000 | Import limits |
+| `TOKENSCOPE_DIR` | `~/.tokenscope` | Theme, quota cache and `pricing.json` location |
+| `TOKENSCOPE_CLAUDE_DIR` | `~/.claude` | Claude Code data directory |
+| `TOKENSCOPE_CODEX_DIR` | `~/.codex` | Codex data directory |
+| `TOKENSCOPE_GEMINI_DIR` | `~/.gemini` | Antigravity data parent directory |
+| `TOKENSCOPE_CLAUDE_RPC_DIR` | `~/.claude-rpc` | Optional fallback quota cache |
+| `TOKENSCOPE_ANTIGRAVITY_STATE` | `%APPDATA%/Antigravity/User/globalStorage/state.vscdb` | Antigravity state database (availability check) |
+| `TOKENSCOPE_CLAUDE_OAUTH` | `1` | `0` disables the Anthropic usage request; cached quotas only |
+| `MONGO_URL` | required | Web backend: MongoDB connection string |
+| `DB_NAME` | required | Web backend: database name |
+| `TOKENSCOPE_API_KEY` | empty | Web backend: when set, write endpoints require `X-API-Key` |
+| `CORS_ORIGINS` | `*` | Web backend: comma-separated allowed origins |
+| `MAX_UPLOAD_BYTES`, `MAX_IMPORT_ROWS` | 5 MB, 50 000 | Web backend: import limits |
 
-Reader toggles (used by the tray app and backend):
+## Limitations
 
-| Var | Purpose |
-| --- | --- |
-| `TOKENSCOPE_DIR` | Override the cache dir (default `~/.tokenscope`) |
-| `TOKENSCOPE_CLAUDE_OAUTH=0` | Disable the OAuth usage call (use cached limits only) |
-
----
-
-## Privacy & security
-
-- **Local processing.** All parsing happens on your machine; the desktop server binds to
-  `127.0.0.1` and exposes only read-only endpoints.
-- **Credential handling.** OAuth tokens / API keys are not logged, returned in API
-  responses, or persisted in plaintext beyond their original credential file. Status
-  responses expose only boolean availability flags and percentages.
-- **Telemetry.** No telemetry is collected. The optional Anthropic usage request is
-  the only outbound usage call.
-
----
+- Costs are estimates from public list prices. Subscription usage is not billed per token.
+- Models without a known price show **price unknown** and count as $0 until added to `pricing.json`.
+- The desktop app is built and tested on Windows only. There is no macOS build.
+- The web backend (`backend/local_sources.py`) does not read `pricing.json` and has no date-based Gemini prices.
 
 ## Project layout
 
 ```text
-backend/      FastAPI server + local_sources.py (the shared reader) + tests/
-frontend/     React web app (src/lib/i18n.js holds the FR/EN dictionary)
-desktop/      Tray .exe sources: tray.py, server.py, web.py, icon.py, build.bat
-bin/          Prebuilt TokenScope.exe
+tauri/      Desktop app: Rust sources (src/), dashboard pages (ui-src/), build.rs
+backend/    FastAPI server and local_sources.py (web app reader) with tests
+frontend/   React web app
 ```
 
-## Roadmap
+## License
 
-- **Antigravity (Google)** usage — will appear automatically once added to
-  `backend/local_sources.py`; the UI already accounts for additional tools.
+MIT. See `LICENSE`.

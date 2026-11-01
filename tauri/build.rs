@@ -1,6 +1,6 @@
-//! Extracts the dashboard and tray-popup HTML from `desktop/web.py` (the single source of
-//! truth shared with the Python app) into `ui/`, with a small shim that maps the pages'
-//! `fetch("/api/...")` and `window.pywebview.api` calls onto Tauri commands.
+//! Copies the dashboard and tray-popup pages from `ui-src/` into `ui/` with a small shim
+//! that maps the pages' `fetch("/api/...")` and `window.pywebview.api` calls (kept from the
+//! former Python app) onto Tauri commands.
 use std::fs;
 
 const SHIM: &str = r#"<script>
@@ -26,20 +26,18 @@ document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest
 })();
 </script>"#;
 
-fn extract(src: &str, name: &str) -> String {
-    let start = src.find(&format!("{name} = r\"\"\"")).expect("html constant") + name.len() + 7;
-    let end = start + src[start..].find("\"\"\"").expect("closing quotes");
-    let html = &src[start..end];
+fn with_shim(html: &str) -> String {
     let at = html.find("<head>").expect("<head>") + "<head>".len();
     format!("{}\n{}{}", &html[..at], SHIM, &html[at..])
 }
 
 fn main() {
-    let web = "../desktop/web.py";
-    println!("cargo:rerun-if-changed={web}");
-    let src = fs::read_to_string(web).expect("read desktop/web.py");
     fs::create_dir_all("ui").unwrap();
-    fs::write("ui/index.html", extract(&src, "INDEX_HTML")).unwrap();
-    fs::write("ui/tray.html", extract(&src, "TRAY_HTML")).unwrap();
+    for page in ["index.html", "tray.html"] {
+        let src = format!("ui-src/{page}");
+        println!("cargo:rerun-if-changed={src}");
+        let html = fs::read_to_string(&src).expect("read ui-src page");
+        fs::write(format!("ui/{page}"), with_shim(&html)).unwrap();
+    }
     tauri_build::build()
 }

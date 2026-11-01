@@ -37,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **Python desktop app** (`desktop/`: pywebview/PyInstaller tray exe and macOS app),
+  `build-windows.yml`, `build-macos.yml` and `script/build_and_run.sh`. The Tauri app in
+  `tauri/` replaces it; its dashboard pages now live in `tauri/ui-src/`. The FastAPI backend
+  and React web app are unchanged.
 - The StealthyLabs logo and byline in the About card.
 
 ### Fixed
