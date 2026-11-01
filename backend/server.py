@@ -50,7 +50,14 @@ api_router = APIRouter(prefix="/api")
 # ----- Pricing reference (USD per 1M tokens) -----
 # Used as a fallback when imported files do not provide cost.
 PRICING = {
-    # Anthropic Claude
+    # Anthropic Claude (official rates checked 2026-11-01)
+    "claude-opus-5-5": {"input": 4.0, "output": 20.0},
+    "claude-opus-5": {"input": 5.0, "output": 25.0},
+    "claude-sonnet-5-5": {"input": 2.0, "output": 10.0},
+    "claude-sonnet-5": {"input": 2.0, "output": 10.0},
+    "claude-haiku-5-5": {"input": 0.10, "output": 0.50},  # <=100K-token prompts
+    "claude-fable-5-1": {"input": 10.0, "output": 50.0},
+    "claude-mythos-5": {"input": 10.0, "output": 50.0},
     "claude-sonnet-4-5": {"input": 3.0, "output": 15.0},
     "claude-sonnet-4.5": {"input": 3.0, "output": 15.0},
     "claude-sonnet-4-6": {"input": 3.0, "output": 15.0},
@@ -67,21 +74,34 @@ PRICING = {
     "claude-haiku-4-5": {"input": 1.0, "output": 5.0},
     "claude-haiku-4.5": {"input": 1.0, "output": 5.0},
     "claude-3-5-sonnet": {"input": 3.0, "output": 15.0},
-    # OpenAI / Codex
-    "gpt-5.2": {"input": 1.25, "output": 10.0},
-    "gpt-5-2": {"input": 1.25, "output": 10.0},
-    "gpt-5.4": {"input": 1.5, "output": 12.0},
-    "gpt-5.6-sol": {"input": 5.0, "output": 30.0},
-    "gpt-5.6-terra": {"input": 2.5, "output": 15.0},
-    "gpt-5.6-luna": {"input": 1.0, "output": 6.0},
+    # OpenAI / Codex (official rates checked 2026-11-01)
+    "gpt-6-astra": {"input": 10.0, "output": 50.0},
+    "gpt-6.1-sol": {"input": 2.0, "output": 10.0},
+    "gpt-6.1-terra": {"input": 1.0, "output": 5.0},
+    "gpt-6-sol": {"input": 2.0, "output": 10.0},
+    "gpt-6-luna": {"input": 0.10, "output": 0.50},
+    "gpt-5.6-sol": {"input": 4.0, "output": 20.0},
+    "gpt-5.6-terra": {"input": 2.0, "output": 12.0},
+    "gpt-5.6-luna": {"input": 0.20, "output": 1.20},
+    "gpt-5.5": {"input": 5.0, "output": 30.0},
+    "gpt-5.4": {"input": 2.5, "output": 15.0},
+    "gpt-5.3-codex": {"input": 1.75, "output": 14.0},
+    "gpt-5.2": {"input": 1.75, "output": 14.0},
+    "gpt-5-2": {"input": 1.75, "output": 14.0},
     "gpt-4o": {"input": 2.5, "output": 10.0},
     "gpt-4.1": {"input": 2.0, "output": 8.0},
     "codex-1": {"input": 1.25, "output": 10.0},
-    # Google / Gemini (Antigravity)
-    "gemini-3-pro": {"input": 1.25, "output": 10.0},
-    "gemini-3.1-pro": {"input": 1.25, "output": 10.0},
-    "gemini-3-flash": {"input": 0.30, "output": 2.50},
-    "gemini-3.5-flash": {"input": 0.30, "output": 2.50},
+    # Google / Gemini (Antigravity; rates checked 2026-11-01)
+    "gemini-4-argon": {"input": 2.0, "output": 10.0},
+    "gemini-3.8-flash": {"input": 0.75, "output": 3.75},
+    "gemini-3.6-flash": {"input": 0.75, "output": 3.75},
+    "gemini-3.5-flash-lite": {"input": 0.30, "output": 2.50},
+    "gemini-3.5-flash": {"input": 1.50, "output": 9.00},
+    "gemini-3.1-flash-lite": {"input": 0.25, "output": 1.50},
+    "gemini-3.1-pro": {"input": 2.0, "output": 12.0},
+    "gemini-3-pro": {"input": 2.0, "output": 12.0},
+    "gemini-3-flash": {"input": 0.50, "output": 3.00},
+    "gemini-2.5-pro": {"input": 1.25, "output": 10.0},
     "gemini-2.0-flash": {"input": 0.10, "output": 0.40},
 }
 
@@ -555,9 +575,10 @@ def local_status():
 def local_summary(
     days: int = Query(default=30, ge=1, le=100000),
     tool: Optional[str] = None,
+    project: Optional[str] = Query(default=None, max_length=400),
 ):
     t = tool if tool in VALID_TOOLS else None
-    return local_sources.read_local_summary(days=days, tool=t)
+    return local_sources.read_local_summary(days=days, tool=t, project=project or None)
 
 
 @api_router.get("/local/utilization")

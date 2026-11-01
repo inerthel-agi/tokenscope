@@ -1,0 +1,61 @@
+table dates
+	dataCategory: Time
+
+	column date
+		dataType: dateTime
+		isKey
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: date
+
+	column year
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: year
+
+	column quarter
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: quarter
+
+	column month
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: month
+
+	column month_label
+		dataType: string
+		summarizeBy: none
+		sourceColumn: month_label
+
+	column iso_week
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: iso_week
+
+	column weekday
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: weekday
+
+	column weekday_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: weekday_name
+		sortByColumn: weekday
+
+	partition dates = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ExportFolder & "\calendar.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    NoBlank = Table.ReplaceValue(Headers, "", null, Replacer.ReplaceValue, {"date"}),
+				    Typed = Table.TransformColumnTypes(NoBlank, {{"date", type date}, {"year", Int64.Type}, {"quarter", Int64.Type}, {"month", Int64.Type}, {"month_label", type text}, {"iso_week", Int64.Type}, {"weekday", Int64.Type}, {"weekday_name", type text}}, "en-US")
+				in
+				    Typed

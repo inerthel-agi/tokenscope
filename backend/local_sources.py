@@ -25,6 +25,8 @@ import logging
 import math
 import os
 import re
+import shutil
+import subprocess
 import sys
 import time
 from datetime import datetime, timezone, timedelta
@@ -59,48 +61,93 @@ def tokenscope_dir() -> Path:
 CLAUDE_CACHE_READ_MULT = 0.1
 CLAUDE_CACHE_WRITE_5M_MULT = 1.25
 CLAUDE_CACHE_WRITE_1H_MULT = 2.0
-CODEX_CACHED_INPUT_MULT = 0.1  # OpenAI bills cached input at 0.1x; no cache-write cost
+CODEX_CACHED_INPUT_MULT = 0.1  # OpenAI bills cached input at 0.1x (GPT-6.1: 0.05x); no cache-write cost
 
 
-def claude_pricing(model_id: str) -> Tuple[str, float, float]:
+def _claude_version(b: str, family: str) -> Tuple[int, int]:
+    """(major, minor) after the family word; accepts API ids (opus-4-1, opus-4-20250514)
+    and Antigravity display names (Opus 4.6). Legacy ids (claude-3-5-haiku) -> (3, 5)."""
+    m = re.search(family + r"[ \-]?(\d{1,2})(?!\d)(?:[.\-](\d{1,2})(?!\d))?", b)
+    if not m:
+        m = re.search(r"claude-(\d+)(?:-(\d{1,2})(?!\d))?-" + family, b)
+    if not m:
+        return (0, 0)
+    return (int(m.group(1)), int(m.group(2) or 0))
+
+
+def claude_pricing(model_id: str, prompt_tokens: int = 0) -> Tuple[str, float, float]:
     """Return (family_label, input_rate, output_rate) per 1M tokens for a Claude model.
 
-    Rates verified against the official Anthropic pricing page (USD per MTok):
-      Fable/Mythos 5  10 / 50
-      Opus 4.5–4.8     5 / 25   (Opus 4 & 4.1 are the deprecated 15 / 75 tier)
-      Sonnet 4.x       3 / 15
-      Haiku 4.5        1 / 5    (Haiku 3.5 = 0.8 / 4)
-    Cache: read 0.1x, 5m-write 1.25x, 1h-write 2x of the input rate.
+    Rates verified against the official Anthropic pricing page on 2026-11-01 (USD per MTok):
+      Fable/Mythos 5.x  10 / 50
+      Opus 5.5           4 / 20   (Opus 4.5–5: 5 / 25; Opus 4 & 4.1: 15 / 75)
+      Sonnet 5 / 5.5     2 / 10   (Sonnet 4.x: 3 / 15)
+      Haiku 5.5       0.10 / 0.50 for prompts <=100K tokens, 0.50 / 2.50 above
+      Haiku 4.5          1 / 5    (Haiku 3.5 = 0.8 / 4)
+    `prompt_tokens` (input + cache read + cache write) selects the Haiku 5.5 tier.
+    Cache writes are 1.25x / 2x of the input rate; reads vary, see claude_cache_read_mult.
     """
     b = (model_id or "").lower().split("[")[0]
     if "fable" in b or "mythos" in b:
         return ("Fable", 10.0, 50.0)
     if "haiku" in b:
-        if "haiku-3" in b:
+        v = _claude_version(b, "haiku")
+        if v >= (5, 5):
+            if prompt_tokens > 100_000:
+                return ("Haiku 5.5", 0.50, 2.50)
+            return ("Haiku 5.5", 0.10, 0.50)
+        if v[0] == 3:
             return ("Haiku", 0.8, 4.0)
         return ("Haiku", 1.0, 5.0)
     if "sonnet" in b:
+        if _claude_version(b, "sonnet")[0] >= 5:
+            return ("Sonnet 5", 2.0, 10.0)
         return ("Sonnet", 3.0, 15.0)
     if "opus" in b:
-        # Only the deprecated Opus 4 (bare) and Opus 4.1 are $15/$75; 4.5+ are $5/$25.
-        # Accept API ids (opus-4-1) and Antigravity display names (Opus 4.6).
-        m = re.search(r"opus[ \-]?4(?:[.\-](\d+))?", b)
-        if m and m.group(1) in (None, "1"):
+        v = _claude_version(b, "opus")
+        if v >= (5, 5):
+            return ("Opus 5.5", 4.0, 20.0)
+        if v in ((4, 0), (4, 1)):
             return ("Opus 4.1", 15.0, 75.0)
         return ("Opus", 5.0, 25.0)
     return (model_id or "unknown", 0.0, 0.0)
 
 
+def claude_cache_read_mult(model_id: str) -> float:
+    """Cache-hit multiplier of the input rate: 0.025x Fable/Mythos 5.1, 0.05x Opus/Sonnet 5.5,
+    0.1x everything else (official pricing page, 2026-11-01)."""
+    b = (model_id or "").lower()
+    for fam in ("fable", "mythos"):
+        if fam in b and _claude_version(b, fam) >= (5, 1):
+            return 0.025
+    for fam in ("opus", "sonnet"):
+        if fam in b and _claude_version(b, fam) >= (5, 5):
+            return 0.05
+    return CLAUDE_CACHE_READ_MULT
+
+
 def codex_pricing(model_id: str) -> Tuple[str, float, float]:
     """Return (family_label, input_rate, output_rate) per 1M tokens for an OpenAI/Codex model."""
+    # Rates verified against the official OpenAI pricing page on 2026-11-01 (short context).
     b = (model_id or "").lower()
+    m = re.search(r"gpt[ .-]?6(?:[ .-](\d+))?", b)
+    if m:
+        minor = ".1" if m.group(1) == "1" else ""
+        if "astra" in b:
+            return ("GPT-6 Astra", 10.0, 50.0)
+        if "sol" in b:
+            return (f"GPT-6{minor} Sol", 2.0, 10.0)
+        if "terra" in b:
+            return ("GPT-6.1 Terra", 1.0, 5.0)  # only 6.1 Terra is listed
+        if "luna" in b:
+            return ("GPT-6 Luna", 0.10, 0.50)
     if re.search(r"gpt[ .-]?5[ .-]?6", b):
         if "luna" in b:
-            return ("GPT-5.6 Luna", 1.0, 6.0)
+            return ("GPT-5.6 Luna", 0.20, 1.20)
         if "terra" in b:
-            return ("GPT-5.6 Terra", 2.50, 15.0)
+            return ("GPT-5.6 Terra", 2.0, 12.0)
         if "sol" in b:
-            return ("GPT-5.6 Sol", 5.0, 30.0)
+            return ("GPT-5.6 Sol", 4.0, 20.0)
     if "codex" in b:
         return ("Codex", 1.75, 14.0)
     if "gpt-5.5" in b or "gpt-5-5" in b:
@@ -112,7 +159,9 @@ def codex_pricing(model_id: str) -> Tuple[str, float, float]:
     if "gpt-5.4" in b or "gpt-5-4" in b:
         return ("GPT-5.4", 2.50, 15.0)
     if "gpt-5.2" in b or "gpt-5-2" in b:
-        return ("GPT-5.2", 1.25, 10.0)
+        return ("GPT-5.2", 1.75, 14.0)
+    if re.search(r"gpt-5(?:[.-]1)?(?![.\d-])", b):
+        return ("GPT-5", 1.25, 10.0)
     if "gpt-4o" in b:
         return ("GPT-4o", 2.50, 10.0)
     return (model_id or "unknown", 0.0, 0.0)
@@ -256,12 +305,12 @@ def _parse_claude_file(path: str) -> List[dict]:
                     w5, w1 = ccreate, 0
                 if inp == 0 and out == 0 and cread == 0 and ccreate == 0:
                     continue  # synthetic / empty assistant turn carries no usage
-                _label, in_rate, out_rate = claude_pricing(model)
+                _label, in_rate, out_rate = claude_pricing(model, inp + cread + ccreate)
                 cost = (
                     inp / 1e6 * in_rate
                     + out / 1e6 * out_rate
                     + (
-                        cread * CLAUDE_CACHE_READ_MULT
+                        cread * claude_cache_read_mult(model)
                         + w5 * CLAUDE_CACHE_WRITE_5M_MULT
                         + w1 * CLAUDE_CACHE_WRITE_1H_MULT
                     )
@@ -297,12 +346,40 @@ def _read_codex_config_model() -> Optional[str]:
     return None
 
 
+try:  # Python 3.14+ stdlib; older interpreters skip compressed rollouts
+    from compression import zstd as _zstd
+except ImportError:
+    _zstd = None
+
+
+def _open_text(path: str):
+    """Codex now stores finished rollouts zstd-compressed (`.jsonl.zst`)."""
+    if path.endswith(".zst"):
+        return _zstd.open(path, "rt", encoding="utf-8", errors="replace")
+    return open(path, "r", encoding="utf-8", errors="replace")
+
+
+def _codex_rollouts() -> List[str]:
+    """Live `.jsonl` and compressed `.jsonl.zst` rollouts under sessions/ and archived_sessions/,
+    one file per session (a session can briefly exist in both forms; prefer the live one)."""
+    best: Dict[str, str] = {}
+    for sub in ("sessions", "archived_sessions"):
+        for fp in glob.iglob(str(codex_dir() / sub / "**" / "rollout-*.jsonl*"), recursive=True):
+            if not (fp.endswith(".jsonl") or (fp.endswith(".jsonl.zst") and _zstd is not None)):
+                continue
+            key = os.path.basename(fp).removesuffix(".zst")
+            if key not in best or best[key].endswith(".zst"):
+                best[key] = fp
+    return list(best.values())
+
+
 def _parse_codex_file(path: str, default_model: Optional[str]) -> List[dict]:
     events: List[dict] = []
     cwd: Optional[str] = None
     current_model: Optional[str] = default_model
+    prev_total = None  # session-cumulative total_tokens of the previous token_count
     try:
-        with open(path, "r", encoding="utf-8", errors="replace") as fh:
+        with _open_text(path) as fh:
             for line in fh:
                 line = line.strip()
                 if not line:
@@ -331,17 +408,26 @@ def _parse_codex_file(path: str, default_model: Optional[str]) -> List[dict]:
                     delta = info.get("last_token_usage")
                     if not isinstance(delta, dict):
                         continue
+                    # Codex re-emits token_count (e.g. on a rate-limit refresh) with an unchanged
+                    # cumulative total and the previous turn's last_token_usage: not new spend.
+                    # A total that moved (up, or down on a branch switch) is always kept.
+                    tot = (info.get("total_token_usage") or {}).get("total_tokens")
+                    if tot is not None:
+                        if tot == prev_total:
+                            continue
+                        prev_total = tot
                     inp = delta.get("input_tokens", 0) or 0
                     out = delta.get("output_tokens", 0) or 0
                     cached = min(delta.get("cached_input_tokens", 0) or 0, inp)
                     if inp == 0 and out == 0:
                         continue
-                    _label, in_rate, out_rate = codex_pricing(current_model or "")
+                    label, in_rate, out_rate = codex_pricing(current_model or "")
+                    cmult = 0.05 if label.startswith("GPT-6.1") else CODEX_CACHED_INPUT_MULT
                     uncached = max(0, inp - cached)
                     # output_tokens already INCLUDES reasoning_output_tokens (a sub-breakdown);
                     # verified on real rollouts: total_tokens == input_tokens + output_tokens.
                     cost = (
-                        (uncached * in_rate + cached * in_rate * CODEX_CACHED_INPUT_MULT) / 1e6
+                        (uncached * in_rate + cached * in_rate * cmult) / 1e6
                         + out * out_rate / 1e6
                     )
                     ts = _parse_ts(o.get("timestamp"))
@@ -350,7 +436,7 @@ def _parse_codex_file(path: str, default_model: Optional[str]) -> List[dict]:
                     events.append(
                         _make_event("codex", current_model, cwd, ts, uncached, out, cached, 0, cost)
                     )
-    except (OSError, ValueError, OverflowError):
+    except (OSError, ValueError, OverflowError, EOFError):
         return []
     return events
 
@@ -360,9 +446,13 @@ def _collect_events(root: Path, pattern: str, parser, cutoff_ts: float, *parser_
     skipping files whose mtime is older than cutoff_ts."""
     if not root.exists():
         return []
+    return _parse_files(root, glob.iglob(str(root / pattern), recursive=True), parser, cutoff_ts, *parser_args)
+
+
+def _parse_files(root: Path, files, parser, cutoff_ts: float, *parser_args) -> List[dict]:
     out: List[dict] = []
     seen = set()
-    for fp in glob.iglob(str(root / pattern), recursive=True):
+    for fp in files:
         try:
             mt = os.path.getmtime(fp)
         except OSError:
@@ -410,13 +500,11 @@ def read_claude_events(days: int) -> List[dict]:
 def read_codex_events(days: int) -> List[dict]:
     cutoff_ts = time.time() - days * 86400 - _MTIME_MARGIN_S
     default_model = _read_codex_config_model()
-    return _collect_events(
-        codex_dir() / "sessions", "**/rollout-*.jsonl", _parse_codex_file, cutoff_ts, default_model
-    )
+    return _parse_files(codex_dir(), _codex_rollouts(), _parse_codex_file, cutoff_ts, default_model)
 
 
 # ----- aggregation (same shape as backend get_summary, plus by_project + cache fields) -----
-def aggregate(events: List[dict], days: int, tool: Optional[str] = None) -> dict:
+def aggregate(events: List[dict], days: int, tool: Optional[str] = None, project: Optional[str] = None) -> dict:
     since = datetime.now(timezone.utc) - timedelta(days=days)
     total_in = total_out = total_cread = total_ccreate = 0
     total_cost = 0.0
@@ -430,6 +518,8 @@ def aggregate(events: List[dict], days: int, tool: Optional[str] = None) -> dict
 
     for e in events:
         if tool and e["tool"] != tool:
+            continue
+        if project and e["project"] != project:  # dashboard drill-down (normalized path)
             continue
         ts = _parse_ts(e.get("timestamp"))
         if ts is not None and ts < since:
@@ -521,7 +611,7 @@ def aggregate(events: List[dict], days: int, tool: Optional[str] = None) -> dict
     }
 
 
-def read_local_summary(days: int = 30, tool: Optional[str] = None) -> dict:
+def read_local_summary(days: int = 30, tool: Optional[str] = None, project: Optional[str] = None) -> dict:
     events: List[dict] = []
     if tool in (None, "claude_api"):
         events += read_claude_events(days)
@@ -529,7 +619,7 @@ def read_local_summary(days: int = 30, tool: Optional[str] = None) -> dict:
         events += read_codex_events(days)
     if tool in (None, "antigravity"):
         events += read_antigravity_events(days)
-    return aggregate(events, days, tool)
+    return aggregate(events, days, tool, project)
 
 
 # ----- Claude subscription utilization -----
@@ -551,6 +641,31 @@ def _read_claude_oauth_token() -> Optional[str]:
         return None
     tok = o.get("accessToken")
     return tok if isinstance(tok, str) and tok else None
+
+
+_CLI_REFRESH_AT = 0.0
+
+
+def _refresh_claude_token_via_cli() -> Optional[str]:
+    """The OAuth token expires after ~8h when the `claude` CLI is idle (the desktop app keeps
+    its own sign-in). `claude auth status` makes the CLI renew and save it itself, so
+    TokenScope never handles the refresh token. Throttled to one attempt per 10 min."""
+    global _CLI_REFRESH_AT
+    if time.time() < _CLI_REFRESH_AT:
+        return None
+    _CLI_REFRESH_AT = time.time() + 600
+    exe = shutil.which("claude")
+    if not exe:
+        return None
+    try:
+        subprocess.run(
+            [exe, "auth", "status"],
+            capture_output=True, timeout=30,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return _read_claude_oauth_token()
 
 
 def _extract_oauth_percent(bucket: dict) -> Optional[float]:
@@ -578,7 +693,7 @@ def _fetch_claude_oauth_limits() -> List[dict]:
         return []
     if time.time() < _OAUTH_BACKOFF_UNTIL:  # in 429 backoff -> serve cache instead
         return []
-    tok = _read_claude_oauth_token()
+    tok = _read_claude_oauth_token() or _refresh_claude_token_via_cli()
     if not tok:
         return []
     try:
@@ -841,7 +956,7 @@ def read_codex_utilization() -> dict:
         return result
     cutoff = time.time() - 30 * 86400
     files = []
-    for fp in glob.iglob(str(root / "**/rollout-*.jsonl"), recursive=True):
+    for fp in _codex_rollouts():
         try:
             mt = os.path.getmtime(fp)
         except OSError:
@@ -853,11 +968,15 @@ def read_codex_utilization() -> dict:
     codex_snap = spark_snap = None
     for fp, mt in files:
         try:
-            with open(fp, "rb") as fh:
-                size = os.path.getsize(fp)
-                fh.seek(max(0, size - 256 * 1024))
-                tail = fh.read().decode("utf-8", "replace")
-        except OSError:
+            if fp.endswith(".zst"):
+                with _open_text(fp) as fh:
+                    tail = fh.read()[-256 * 1024:]
+            else:
+                with open(fp, "rb") as fh:
+                    size = os.path.getsize(fp)
+                    fh.seek(max(0, size - 256 * 1024))
+                    tail = fh.read().decode("utf-8", "replace")
+        except (OSError, ValueError, EOFError):
             continue
         for line in reversed(tail.split("\n")):
             line = line.strip()
@@ -956,15 +1075,31 @@ def antigravity_pricing(model_id: str) -> Tuple[str, float, float]:
         return claude_pricing(model_id)
     if "gpt" in b or "oss" in b:
         return ("GPT-OSS", 0.15, 0.60)
-    # Gemini public list rates per 1M tokens (Pro = the <=200K-token tier).
+    # Gemini public list rates per 1M tokens (Pro = the <=200K-token tier), checked 2026-11-01.
+    # ponytail: current rates only; scheduled hikes (Argon 4/20 from 2026-12-01, Flash 3.6/3.8
+    # 1.50/7.50 from 2027-01-01) need a date-aware table once they take effect.
+    v = re.search(r"gemini[ \-]?(\d+(?:[.\-]\d)?)", b)
+    ver = v.group(1).replace("-", ".") if v else ""
+    if "argon" in b:
+        return ("Gemini 4 Argon", 2.0, 10.0)
     if "flash" in b:
         if "lite" in b:
-            return ("Gemini Flash Lite", 0.25, 1.50)   # Gemini 3.1 Flash Lite
-        if "3.5" in b or "3-5" in b:
-            return ("Gemini Flash", 1.50, 9.00)         # Gemini 3.5 Flash
-        return ("Gemini Flash", 0.50, 3.00)             # Gemini 3 Flash (preview)
+            if ver == "3.5":
+                return ("Gemini Flash Lite", 0.30, 2.50)  # Gemini 3.5 Flash-Lite
+            if ver == "2.5":
+                return ("Gemini Flash Lite", 0.10, 0.40)
+            return ("Gemini Flash Lite", 0.25, 1.50)      # Gemini 3.1 Flash-Lite
+        if ver in ("3.6", "3.8"):
+            return ("Gemini Flash", 0.75, 3.75)           # Gemini 3.6 / 3.8 Flash
+        if ver == "3.5":
+            return ("Gemini Flash", 1.50, 9.00)           # Gemini 3.5 Flash
+        if ver == "2.5":
+            return ("Gemini Flash", 0.30, 2.50)
+        return ("Gemini Flash", 0.50, 3.00)               # Gemini 3 Flash (preview)
     if "pro" in b:
-        return ("Gemini Pro", 2.0, 12.0)                # Gemini 3.x Pro (<=200K)
+        if ver == "2.5":
+            return ("Gemini Pro", 1.25, 10.0)
+        return ("Gemini Pro", 2.0, 12.0)                  # Gemini 3.x Pro (<=200K)
     return ("Gemini", 0.50, 3.00)
 
 
