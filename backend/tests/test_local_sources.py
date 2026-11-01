@@ -147,9 +147,38 @@ def test_summary_per_project_and_tokens():
 
 
 def test_gpt_5_6_pricing_tiers():
-    assert ls.codex_pricing("gpt-5.6-sol")[1:] == (5.0, 30.0)
-    assert ls.codex_pricing("GPT 5.6 Terra")[1:] == (2.5, 15.0)
-    assert ls.codex_pricing("gpt-5-6-luna")[1:] == (1.0, 6.0)
+    assert ls.codex_pricing("gpt-5.6-sol")[1:] == (4.0, 20.0)
+    assert ls.codex_pricing("GPT 5.6 Terra")[1:] == (2.0, 12.0)
+    assert ls.codex_pricing("gpt-5-6-luna")[1:] == (0.20, 1.20)
+
+
+def test_gpt_6_and_legacy_gpt_5_pricing():
+    assert ls.codex_pricing("gpt-6-luna")[1:] == (0.10, 0.50)
+    assert ls.codex_pricing("gpt-6-sol") == ("GPT-6 Sol", 2.0, 10.0)
+    assert ls.codex_pricing("gpt-6.1-sol") == ("GPT-6.1 Sol", 2.0, 10.0)
+    assert ls.codex_pricing("GPT 6.1 Terra")[1:] == (1.0, 5.0)
+    assert ls.codex_pricing("gpt-6-astra")[1:] == (10.0, 50.0)
+    assert ls.codex_pricing("gpt-5.2")[1:] == (1.75, 14.0)
+    assert ls.codex_pricing("gpt-5.1")[1:] == (1.25, 10.0)
+    assert ls.codex_pricing("gpt-5.3-codex")[1:] == (1.75, 14.0)
+
+
+def test_claude_5_pricing():
+    assert ls.claude_pricing("claude-opus-5-5")[1:] == (4.0, 20.0)
+    assert ls.claude_pricing("claude-opus-5")[1:] == (5.0, 25.0)
+    assert ls.claude_pricing("claude-opus-4-20250514")[1:] == (15.0, 75.0)
+    assert ls.claude_pricing("claude-opus-4-8")[1:] == (5.0, 25.0)
+    assert ls.claude_pricing("claude-sonnet-5-5")[1:] == (2.0, 10.0)
+    assert ls.claude_pricing("claude-sonnet-4-5-20250929")[1:] == (3.0, 15.0)
+    assert ls.claude_pricing("claude-haiku-5-5")[1:] == (0.10, 0.50)
+    assert ls.claude_pricing("claude-haiku-5-5", 150_000)[1:] == (0.50, 2.50)
+    assert ls.claude_pricing("claude-haiku-4-5-20251001")[1:] == (1.0, 5.0)
+    assert ls.claude_pricing("claude-3-5-haiku-20241022")[1:] == (0.8, 4.0)
+    assert ls.claude_pricing("claude-fable-5-1")[1:] == (10.0, 50.0)
+    assert ls.claude_cache_read_mult("claude-fable-5-1") == 0.025
+    assert ls.claude_cache_read_mult("claude-fable-5") == 0.1
+    assert ls.claude_cache_read_mult("claude-opus-5-5") == 0.05
+    assert ls.claude_cache_read_mult("claude-sonnet-4-6") == 0.1
 
 
 def test_claude_utilization_cache_fallback():
@@ -285,6 +314,9 @@ def test_antigravity_gen_decode_and_pricing():
     assert ls.antigravity_pricing("Claude Sonnet 4.6 (Thinking)")[1:] == (3.0, 15.0)
     assert ls.antigravity_pricing("Claude Opus 4.6 (Thinking)")[1:] == (5.0, 25.0)
     assert ls.antigravity_pricing("GPT-OSS 120B")[1:] == (0.15, 0.60)
+    assert ls.antigravity_pricing("Gemini 3.8 Flash (High)")[1:] == (0.75, 3.75)
+    assert ls.antigravity_pricing("Gemini 3.5 Flash-Lite")[1:] == (0.30, 2.50)
+    assert ls.antigravity_pricing("Gemini 4 Argon")[1:] == (2.0, 10.0)
 
 
 def test_antigravity_db_events():
