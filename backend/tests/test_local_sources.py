@@ -347,6 +347,26 @@ def test_antigravity_db_events():
             _teardown()
 
 
+def test_codex_repeated_token_count_counted_once():
+    # Codex re-emits token_count with an unchanged cumulative total (e.g. rate-limit refresh)
+    # and the previous turn's last_token_usage; a moved total (even down) is new spend.
+    def tc(inp, out, total=None):
+        info = {"last_token_usage": {"input_tokens": inp, "output_tokens": out, "total_tokens": inp + out}}
+        if total is not None:
+            info["total_token_usage"] = {"total_tokens": total}
+        return {"type": "event_msg", "payload": {"type": "token_count", "info": info}}
+    lines = [tc(1000, 200, 1200), tc(1000, 200, 1200), tc(300, 100, 1600),
+             tc(50, 10, 900),     # total went down (branch switch): kept
+             tc(20, 5)]           # old format without total_token_usage: kept
+    with tempfile.TemporaryDirectory() as tmp:
+        fp = os.path.join(tmp, "rollout-x.jsonl")
+        Path(fp).write_text("\n".join(json.dumps(l) for l in lines), encoding="utf-8")
+        evs = ls._parse_codex_file(fp, "gpt-5.5")
+    assert len(evs) == 4, len(evs)
+    assert sum(e["input_tokens"] for e in evs) == 1370
+    assert sum(e["output_tokens"] for e in evs) == 315
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failed = 0

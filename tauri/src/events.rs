@@ -187,6 +187,7 @@ fn parse_codex_file(path: &Path, default_model: Option<&str>) -> Vec<Event> {
     let mut events = Vec::new();
     let mut cwd: Option<String> = None;
     let mut model: Option<String> = default_model.map(str::to_string);
+    let mut prev_total: Option<Value> = None; // session-cumulative total_tokens of the previous token_count
     let ok = read_json_lines(path, |o| {
         let t = o.get("type").and_then(|v| v.as_str()).unwrap_or("");
         let empty = Map::new();
@@ -204,6 +205,16 @@ fn parse_codex_file(path: &Path, default_model: Option<&str>) -> Vec<Event> {
             }
             "event_msg" if p.get("type").and_then(|v| v.as_str()) == Some("token_count") => {
                 let Some(d) = p.get("info").and_then(|i| i.get("last_token_usage")).and_then(|v| v.as_object()) else { return };
+                // Codex re-emits token_count (e.g. on a rate-limit refresh) with an unchanged
+                // cumulative total and the previous turn's last_token_usage: not new spend.
+                // A total that moved (up, or down on a branch switch) is always kept.
+                let tot = p.get("info").and_then(|i| i.pointer("/total_token_usage/total_tokens"));
+                if let Some(tot) = tot.filter(|v| !v.is_null()) {
+                    if prev_total.as_ref() == Some(tot) {
+                        return;
+                    }
+                    prev_total = Some(tot.clone());
+                }
                 let g = |k: &str| d.get(k).map(safe_int).unwrap_or(0);
                 let (inp, out) = (g("input_tokens"), g("output_tokens"));
                 let cached = g("cached_input_tokens").min(inp);
@@ -628,5 +639,29 @@ mod tests {
         }
         std::fs::write(format!("{dir}/rust_util.json"), crate::util::read_local_utilization().to_string()).unwrap();
         crate::powerbi::export(std::path::Path::new(&dir)).unwrap();
+    }
+
+    #[test]
+    fn codex_repeated_token_count_counted_once() {
+        // Re-emitted token_count (unchanged cumulative total) is skipped; a moved total
+        // (even down, branch switch) and the old format without a total are kept.
+        let tc = |inp: u64, out: u64, total: Option<u64>| {
+            let mut info = serde_json::json!({"last_token_usage": {"input_tokens": inp, "output_tokens": out}});
+            if let Some(t) = total {
+                info["total_token_usage"] = serde_json::json!({"total_tokens": t});
+            }
+            serde_json::json!({"type": "event_msg", "payload": {"type": "token_count", "info": info}}).to_string()
+        };
+        let lines = [tc(1000, 200, Some(1200)), tc(1000, 200, Some(1200)), tc(300, 100, Some(1600)),
+                     tc(50, 10, Some(900)), tc(20, 5, None)];
+        let dir = std::env::temp_dir().join(format!("ts-codex-dup-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let fp = dir.join("rollout-x.jsonl");
+        std::fs::write(&fp, lines.join("\n")).unwrap();
+        let evs = super::parse_codex_file(&fp, Some("gpt-5.5"));
+        let _ = std::fs::remove_dir_all(&dir);
+        assert_eq!(evs.len(), 4);
+        assert_eq!(evs.iter().map(|e| e.input).sum::<u64>(), 1370);
+        assert_eq!(evs.iter().map(|e| e.output).sum::<u64>(), 315);
     }
 }

@@ -377,6 +377,7 @@ def _parse_codex_file(path: str, default_model: Optional[str]) -> List[dict]:
     events: List[dict] = []
     cwd: Optional[str] = None
     current_model: Optional[str] = default_model
+    prev_total = None  # session-cumulative total_tokens of the previous token_count
     try:
         with _open_text(path) as fh:
             for line in fh:
@@ -407,6 +408,14 @@ def _parse_codex_file(path: str, default_model: Optional[str]) -> List[dict]:
                     delta = info.get("last_token_usage")
                     if not isinstance(delta, dict):
                         continue
+                    # Codex re-emits token_count (e.g. on a rate-limit refresh) with an unchanged
+                    # cumulative total and the previous turn's last_token_usage: not new spend.
+                    # A total that moved (up, or down on a branch switch) is always kept.
+                    tot = (info.get("total_token_usage") or {}).get("total_tokens")
+                    if tot is not None:
+                        if tot == prev_total:
+                            continue
+                        prev_total = tot
                     inp = delta.get("input_tokens", 0) or 0
                     out = delta.get("output_tokens", 0) or 0
                     cached = min(delta.get("cached_input_tokens", 0) or 0, inp)

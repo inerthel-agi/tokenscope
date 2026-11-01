@@ -1,6 +1,6 @@
 [package]
 name = "tokenscope"
-version = "1.5.0"
+version = "1.5.1"
 description = "Local token usage and subscription quotas for Claude Code, Codex and Antigravity"
 edition = "2021"
 publish = false

@@ -4,6 +4,17 @@ All notable changes to TokenScope are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2026-11-01
+
+### Fixed
+
+- **Codex tokens counted twice.** Codex re-emits `token_count` events (e.g. on a rate-limit
+  refresh) with an unchanged cumulative `total_token_usage` and the previous turn's
+  `last_token_usage`; each repeat was added again. Events whose cumulative total did not move
+  are now skipped (a total that goes down, or a rollout without totals, is still counted).
+  On one real history this removed 3,136 repeats: about 7 % of Codex tokens and $373 of
+  estimated cost. Fixed in both the Tauri app and the web backend.
+
 ## [1.5.0] - 2026-11-01
 
 Major release: the desktop app is now a Rust/Tauri app and the Python desktop app is removed.
