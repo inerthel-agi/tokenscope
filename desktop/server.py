@@ -120,7 +120,8 @@ class Handler(BaseHTTPRequestHandler):
                 days = max(1, min(days, 100000))  # 100000 ~ lifetime (all sessions)
                 tool = q.get("tool", [None])[0]
                 tool = tool if tool in _VALID_TOOLS else None
-                self._json(ls.read_local_summary(days=days, tool=tool))
+                project = (q.get("project", [""])[0] or "")[:400] or None
+                self._json(ls.read_local_summary(days=days, tool=tool, project=project))
             elif path == "/api/local/utilization":
                 self._json(ls.read_local_utilization())
             elif path == "/api/theme":

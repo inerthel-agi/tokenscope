@@ -19,6 +19,7 @@ INDEX_HTML = r"""<!doctype html>
     --brandFrom:#fff;--brandTo:#c4c4c8;--brandDot1:#fff;--brandDot2:#52525b;--brandGlow:rgba(255,255,255,.35);
     --scrollThumb:#1d1d20;--scrollEdge:#000;--scrollHover:#34343a;--selBg:rgba(255,255,255,.16);
     --cClaude:#fff;--cCodex:#71717A;--cAg:#FFCC00;--gridLine:#1a1a1c;
+    --sideBg:#050505;--hlBg:#111113;--hlBorder:#3f3f46;
   }
   html[data-theme="light"]{
     --bg:#fff;--surface:#fff;--surface2:#F4F4F5;--border:#E4E4E7;
@@ -31,6 +32,7 @@ INDEX_HTML = r"""<!doctype html>
     --brandFrom:#09090B;--brandTo:#52525B;--brandDot1:#09090B;--brandDot2:#a1a1aa;--brandGlow:rgba(0,0,0,.18);
     --scrollThumb:#c4c4c8;--scrollEdge:#fff;--scrollHover:#a1a1aa;--selBg:rgba(0,0,0,.12);
     --cClaude:#09090B;--cCodex:#A1A1AA;--cAg:#EAB308;--gridLine:#EDEDF0;
+    --sideBg:#FAFAFA;--hlBg:#F4F4F5;--hlBorder:#A1A1AA;
   }
   *{box-sizing:border-box}
   html{scrollbar-width:thin;scrollbar-color:var(--scrollThumb) var(--scrollEdge)}
@@ -38,7 +40,6 @@ INDEX_HTML = r"""<!doctype html>
        font-size:12px;-webkit-font-smoothing:antialiased;overflow-y:scroll;
        transition:background .25s,color .25s}
   a{color:inherit}
-  /* scrollbar — invisible track, slim self-fading thumb (theme-aware) */
   ::-webkit-scrollbar{width:10px;height:10px;background:transparent}
   ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background:var(--scrollThumb);border:3px solid var(--scrollEdge);border-radius:8px;
@@ -46,104 +47,156 @@ INDEX_HTML = r"""<!doctype html>
   ::-webkit-scrollbar-thumb:hover{background:var(--scrollHover);background-clip:padding-box}
   ::-webkit-scrollbar-corner{background:transparent}
   ::selection{background:var(--selBg)}
-  .wrap{max-width:1400px;margin:0 auto;padding:0 24px 64px}
-  header{position:sticky;top:0;z-index:10;
-      background:linear-gradient(180deg,var(--headFrom) 0%,var(--headTo) 100%);
-      backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);
-      border-bottom:1px solid var(--border);
-      box-shadow:inset 0 1px 0 var(--headInset),0 10px 30px -16px var(--headShadow)}
-  .hd{display:flex;align-items:center;justify-content:space-between;gap:16px;
-      flex-wrap:wrap;padding:14px 24px;max-width:1400px;margin:0 auto}
-  .brand{display:flex;align-items:center;gap:10px}
-  .brand::before{content:"";width:8px;height:8px;border-radius:2px;
+  button:focus-visible,input:focus-visible,a:focus-visible,th[data-k]:focus-visible,.card .head:focus-visible{
+       outline:2px solid var(--tx);outline-offset:2px}
+
+  /* ---- shell: sidebar + main ---- */
+  .app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+  .side{position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:22px;
+        padding:22px 16px;border-right:1px solid var(--border);background:var(--sideBg)}
+  .brand{display:flex;flex-direction:column;gap:4px;padding:0 6px}
+  .brand .title{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:600;letter-spacing:.04em}
+  .brand .title::before{content:"";width:8px;height:8px;border-radius:2px;
       background:linear-gradient(135deg,var(--brandDot1),var(--brandDot2));box-shadow:0 0 10px var(--brandGlow)}
-  .brand .title{font-size:15px;font-weight:600;letter-spacing:.02em;
-      background:linear-gradient(180deg,var(--brandFrom),var(--brandTo));-webkit-background-clip:text;
-      background-clip:text;-webkit-text-fill-color:transparent}
-  .brand .sub{font-size:10px;text-transform:uppercase;letter-spacing:.25em;color:var(--tx3)}
-  .controls{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-  .meta{font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:8px}
-  .dot{width:7px;height:7px;border-radius:50%;background:var(--red);
+  .brand .sub{font-size:9px;text-transform:uppercase;letter-spacing:.22em;color:var(--tx3)}
+  .meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--tx2);
+        border:1px solid var(--border);border-radius:8px;padding:7px 10px;background:var(--surface)}
+  .dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px;background:var(--red);
       box-shadow:0 0 8px currentColor;transition:background .3s}
-  .dot.ok{background:#22c55e}
-  .dot.busy{background:var(--yellow)}
-  .seg{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;
-      background:var(--segBg)}
-  .seg button{font-family:var(--mono);font-size:11px;text-transform:uppercase;
-      letter-spacing:.2em;padding:6px 12px;background:transparent;color:var(--tx2);
+  .dot.ok{background:#22c55e} .dot.busy{background:var(--yellow)}
+  .grp{display:flex;flex-direction:column;gap:8px}
+  .grp > .lbl{padding:0 6px}
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font-family:var(--mono);
+      font-size:12px;letter-spacing:.04em;text-transform:capitalize;padding:9px 10px;border:0;border-radius:8px;
+      background:transparent;color:var(--tx2);cursor:pointer;transition:background .12s,color .12s}
+  .nav button:hover{background:var(--segHover);color:var(--tx)}
+  .nav button.active{background:var(--surface2);color:var(--tx);box-shadow:inset 0 0 0 1px var(--border)}
+  .nav .sw{width:9px;height:9px;border-radius:3px;flex:0 0 9px}
+  .seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--segBg)}
+  .seg button{flex:1;font-family:var(--mono);font-size:10px;text-transform:uppercase;
+      letter-spacing:.12em;padding:7px 4px;background:transparent;color:var(--tx2);
       border:0;cursor:pointer;transition:background .12s,color .12s}
+  .seg button + button{border-left:1px solid var(--border)}
   .seg button:hover{background:var(--segHover);color:var(--tx)}
-  .seg button.active{background:var(--segActiveBg);color:var(--segActiveFg)}
-  .seg button.active:hover{background:var(--segActiveBg);color:var(--segActiveFg)}
-  .car{color:var(--tx3);font-size:11px;margin-right:6px;display:inline-block;user-select:none}
-  .card .head{cursor:pointer}
-  .card.collapsed > *:not(.head){display:none}
-  .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.25em;color:var(--tx3)}
+  .seg button.active,.seg button.active:hover{background:var(--segActiveBg);color:var(--segActiveFg)}
+  .side .spacer{flex:1}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .upd{display:none;align-items:center;justify-content:center;gap:6px;border:1px solid var(--yellow);border-radius:8px;
+       padding:7px 12px;font-size:11px;letter-spacing:.06em;color:var(--yellow);text-decoration:none}
+  .upd:hover{background:rgba(255,204,0,.1)}
+  .gh{display:flex;align-items:center;gap:8px;padding:6px;font-size:10px;letter-spacing:.03em;
+      color:var(--tx3);text-decoration:none;border-radius:6px}
+  .gh:hover{color:var(--tx)}
+  .gh svg{width:13px;height:13px;fill:currentColor}
+
+  .main{padding:26px 28px 48px;min-width:0;max-width:1480px}
+  .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+  .top h1{margin:0;font-size:20px;font-weight:600;letter-spacing:.01em}
+  .top .scope{font-size:10px;text-transform:uppercase;letter-spacing:.22em;color:var(--tx3);margin-top:6px}
+
+  .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.22em;color:var(--tx3)}
   .grid{display:grid;gap:16px}
-  .g2{grid-template-columns:1fr}
-  .g4{grid-template-columns:repeat(2,1fr)}
-  @media(min-width:900px){.g2{grid-template-columns:1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}}
-  section{margin-top:24px}
-  .card{border:1px solid var(--border);background:var(--surface)}
-  .card .head{display:flex;align-items:center;justify-content:space-between;
-      padding:12px 16px;border-bottom:1px solid var(--border)}
+  .g2{grid-template-columns:1fr 1fr}
+  .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .rowB{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;margin-top:16px;align-items:stretch}
+  .rowB > .card{display:flex;flex-direction:column} .rowB > .card > .body{flex:1;display:flex;flex-direction:column}
+  .rowB > .stack{align-self:start}
+  .rowB:has(#util-section[style*="none"]){grid-template-columns:minmax(0,1fr)}  /* antigravity: no quota column */
+  .stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+  .rowC{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 300px;gap:16px;margin-top:16px;align-items:start}
+
+  .card{border:1px solid var(--border);background:var(--surface);border-radius:12px;overflow:hidden;min-width:0}
+  .card .head{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;
+      padding:13px 16px;border-bottom:1px solid var(--rowLine)}
+  .card.collapsed .head{border-bottom-color:transparent}
+  .card.collapsed > *:not(.head){display:none}
   .card .body{padding:16px}
-  .stat{border:1px solid var(--border);background:var(--surface);padding:20px;
-        display:flex;flex-direction:column;gap:12px}
-  .stat .v{font-size:30px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .car{color:var(--tx3);font-size:11px;margin-right:6px;display:inline-block;user-select:none}
+
+  .stat{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:18px 18px 16px;
+        display:flex;flex-direction:column;gap:10px;min-width:0}
+  .stat .v{font-size:28px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap;
+        overflow:hidden;text-overflow:ellipsis}
   .stat .s{font-size:11px;color:var(--tx2);font-variant-numeric:tabular-nums}
-  .bar{height:8px;background:var(--barTrack);position:relative;margin-top:6px}
-  .bar > i{display:block;height:100%;background:var(--barFill);transition:width .3s}
+  .stat.hl{background:var(--hlBg);border-color:var(--hlBorder)}
+  .stat .dl{font-size:10px;letter-spacing:.04em;color:var(--tx2);font-variant-numeric:tabular-nums}
+  .stat .dl span{color:var(--tx3)}
+  .stat .dl.bad{color:var(--red)} .stat .dl.good{color:#22c55e}
+  .chip{display:none;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+        color:var(--tx);background:var(--surface2);border:1px solid var(--border);border-radius:99px;
+        padding:6px 12px;cursor:pointer;transition:border-color .12s}
+  .chip.on{display:inline-flex} .chip:hover{border-color:var(--tx3)} .chip b{font-weight:400;color:var(--tx3)}
+  #proj-rows tr[data-p]{cursor:pointer}
+  .cal{margin-top:16px}
+  #cal svg{display:block;width:100%;height:auto}
+  #cal text{font-family:var(--mono);font-size:9px;fill:var(--tx3)}
+  #cal .c{fill:var(--calFill);transition:stroke .1s}
+  #cal .c.l0{fill:var(--barTrack)} #cal .c.l1{opacity:.22} #cal .c.l2{opacity:.45} #cal .c.l3{opacity:.7}
+  #cal .c:hover{stroke:var(--tx);stroke-width:1.5}
+  .cal-leg{display:inline-flex;align-items:center;gap:3px}
+  .cal-leg i{width:9px;height:9px;border-radius:2px;background:var(--barFill);display:inline-block}
+
+  /* quota + budget bars */
+  .b5{padding:10px 0}
+  .b5 + .b5{border-top:1px solid var(--rowLine)}
+  .b5:first-child{padding-top:0} .b5:last-child{padding-bottom:0}
+  .barhd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+         font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--tx2)}
+  .barhd .r{color:var(--tx3);text-transform:none;letter-spacing:normal;font-size:10px}
+  .barhd .p{font-variant-numeric:tabular-nums;color:var(--tx);font-size:13px;letter-spacing:.02em;text-transform:none}
+  .bar{height:6px;background:var(--barTrack);border-radius:99px;overflow:hidden;margin-top:8px}
+  .bar > i{display:block;height:100%;background:var(--barFill);border-radius:99px;transition:width .3s}
   .bar.warn > i{background:var(--yellow)} .bar.bad > i{background:var(--red)}
-  .barhd{display:flex;justify-content:space-between;align-items:center;
-         font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--tx3)}
-  .barhd .r{color:var(--tx3);text-transform:none;letter-spacing:normal}
-  .barhd .p{font-variant-numeric:tabular-nums}
-  .b5{margin-bottom:18px}
-  input.num{background:var(--inputBg);border:1px solid var(--border);color:var(--tx);font-family:var(--mono);
-            font-size:12px;padding:6px 8px;width:100%}
+  .budin{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .budin label{display:flex;flex-direction:column;justify-content:flex-end}
+  input.num{background:var(--inputBg);border:1px solid var(--border);border-radius:7px;color:var(--tx);
+            font-family:var(--mono);font-size:12px;padding:7px 9px;width:100%}
   input.num:focus{outline:none;border-color:var(--tx)}
+
+  /* tables */
   table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-  th{font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--tx3);
-     font-weight:500;text-align:right;padding:12px 16px;border-bottom:1px solid var(--border)}
+  th{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--tx3);background:var(--surface);
+     font-weight:500;text-align:right;padding:10px 16px;border-bottom:1px solid var(--rowLine);white-space:nowrap}
   th[data-k]{cursor:pointer;user-select:none;transition:color .12s}
   th[data-k]:hover{color:var(--tx)}
   th.s-asc::after{content:" ▲";font-size:8px} th.s-desc::after{content:" ▼";font-size:8px}
-  .upd{display:none;align-items:center;gap:6px;border:1px solid var(--yellow);border-radius:7px;
-       padding:6px 12px;font-size:11px;letter-spacing:.06em;color:var(--yellow);text-decoration:none}
-  .upd:hover{background:rgba(255,204,0,.1)}
   th.l,td.l{text-align:left}
-  td{padding:10px 16px;border-bottom:1px solid var(--rowLine);font-size:12px}
+  td{padding:9px 16px;border-bottom:1px solid var(--rowLine);font-size:12px;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:0}
   tr:hover td{background:var(--rowHover)}
-  .tag{display:inline-block;border:1px solid var(--border);padding:1px 6px;margin-right:6px;
-       font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:var(--tx2)}
+  td.nm{white-space:normal;width:100%;max-width:0}
+  td.nm .n{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  td.nm .x{display:block;font-size:10px;color:var(--tx3);margin-top:2px;letter-spacing:.06em;
+         overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .share{height:2px;background:var(--barTrack);border-radius:2px;margin-top:6px;max-width:260px}
+  .share > i{display:block;height:100%;border-radius:2px}
+  .tbl{max-height:460px;overflow:auto}
+  .tbl thead th{position:sticky;top:0;z-index:1}
+  .unp{display:inline-block;margin-left:6px;padding:0 5px;border:1px solid var(--yellow);border-radius:4px;
+       color:var(--yellow);font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+  .tag{display:inline-block;border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-right:4px;
+       font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--tx2)}
   .muted{color:var(--tx3)} .w{color:var(--tx)} .empty{color:var(--tx3);padding:24px 16px;text-align:center}
-  .about p{margin:0 0 16px;max-width:760px;font-size:12px;line-height:1.7;letter-spacing:.02em;
-           text-transform:none;color:var(--tx2)}
-  .brandbox{display:inline-flex;align-items:center;gap:22px;background:#0A0A0A;
-            border:1px solid var(--border);border-radius:10px;padding:14px 22px}
-  .brandbox svg{display:block}
-  .brandbox .se{height:26px;width:auto}
-  .brandbox .wm{height:17px;width:auto}
-  .about .by{display:block;margin-top:12px;font-size:10px;text-transform:uppercase;
-             letter-spacing:.25em;color:var(--tx3)}
-  .about a.gh{display:inline-flex;align-items:center;gap:8px;margin-top:14px;
-             border:1px solid var(--border);border-radius:7px;padding:8px 12px;
-             font-size:11px;letter-spacing:.03em;color:var(--tx2);text-decoration:none;
-             transition:background .12s,color .12s,border-color .12s}
-  .about a.gh:hover{background:var(--segHover);color:var(--tx);border-color:var(--tx3)}
-  .about a.gh svg{width:15px;height:15px;fill:currentColor}
-  .foot{margin-top:32px;padding-top:24px;border-top:1px solid var(--rowLine);
-        font-size:10px;text-transform:uppercase;letter-spacing:.25em;color:var(--tx3)}
+
+  .foot{margin-top:28px;padding-top:18px;border-top:1px solid var(--rowLine);display:flex;flex-direction:column;gap:8px}
+  .foot p{margin:0;max-width:820px;font-size:11px;line-height:1.7;color:var(--tx3)}
+  .foot .fl{font-size:9px;text-transform:uppercase;letter-spacing:.22em;color:var(--tx3)}
+
   /* tokens_over_time chart */
   .chart-wrap{position:relative}
   #chart-svg{display:block;width:100%}
   #chart-svg text{font-family:var(--mono);font-size:10px;fill:var(--tx3)}
   #chart-svg .grid{stroke:var(--gridLine)}
-  #chart-svg .hband{fill:transparent;cursor:crosshair}
-  #chart-svg .hband:hover{fill:var(--segHover)}
+  #chart-svg .grid.dash{stroke-dasharray:2 4}
+  #chart-svg .grid.axis{stroke:var(--border)}
+  #chart-svg text.cost{fill:#22c55e;opacity:.75}
+  #chart-svg .day{transition:opacity .15s}
+  #chart-svg.hov .day{opacity:.35} #chart-svg.hov .day.on{opacity:1}
+  #chart-svg .guide{stroke:var(--tx3);stroke-dasharray:3 3}
+  #chart-svg .hzone{fill:transparent;cursor:crosshair}
   .chart-tip{position:absolute;pointer-events:none;display:none;z-index:6;min-width:170px;
-             background:var(--surface2);border:1px solid var(--border);border-radius:7px;
+             background:var(--surface2);border:1px solid var(--border);border-radius:8px;
              padding:9px 11px;font-size:11px;box-shadow:0 12px 32px -10px rgba(0,0,0,.55)}
   .chart-tip .td{font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--tx3);margin-bottom:7px}
   .chart-tip .tr{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:1.5px 0}
@@ -153,23 +206,60 @@ INDEX_HTML = r"""<!doctype html>
   .sw{width:8px;height:8px;border-radius:2px;display:inline-block;flex:0 0 8px}
   .legend{display:flex;align-items:center;gap:14px;letter-spacing:.15em}
   .legend .li{display:flex;align-items:center;gap:6px}
+
+  @media(max-width:1240px){ .rowB{grid-template-columns:minmax(0,1fr)} .rowB > .stack{display:grid;grid-template-columns:1fr 1fr} }
+  @media(max-width:1360px){ .rowC{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .rowC > [data-key="budget"]{grid-column:1 / -1} }
+  @media(max-width:1000px){ .rowC{grid-template-columns:minmax(0,1fr)} .g4{grid-template-columns:repeat(2,minmax(0,1fr))} }
+  @media(max-width:820px){
+    .app{grid-template-columns:1fr}
+    .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border);gap:14px;padding:16px}
+    .nav{flex-direction:row;flex-wrap:wrap} .nav button{width:auto}
+    .side .spacer{display:none}
+    .main{padding:18px 16px 40px}
+    .rowB > .stack{display:flex}
+  }
+  @media(max-width:480px){ .g4{grid-template-columns:1fr} .stat .v{font-size:24px} }
+  /* ---- motion (lot 1): skeletons, chart intro, quota pulse; all off with reduced motion ---- */
+  .skl{border-radius:6px;background:linear-gradient(90deg,var(--surface2) 25%,var(--segHover) 50%,var(--surface2) 75%);
+       background-size:300% 100%;animation:shimmer 1.3s linear infinite}
+  .stat .skl + .skl{margin-top:4px}
+  .chart-sk{flex:1;min-height:230px}
+  @keyframes shimmer{from{background-position:100% 0}to{background-position:0 0}}
+  .busy #cards .v,.busy #chart-svg,.busy .tbl{opacity:.35;transition:opacity .2s}
+  #cards .v,#chart-svg,.tbl{transition:opacity .35s}
+  #chart-svg.intro .day{transform-box:fill-box;transform-origin:50% 100%;
+       animation:grow .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * var(--stagger))}
+  #chart-svg.intro .curve{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.1s .15s cubic-bezier(.4,0,.2,1) forwards}
+  #chart-svg.intro .area{animation:fade .8s .55s both}
+  @keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  #cl-body .bar.bad > i,#cx-body .bar.bad > i{animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.4}}
+  @media(prefers-reduced-motion:reduce){ *{transition:none !important;animation:none !important} }
 </style>
 </head>
 <body>
-<header>
-  <div class="hd">
+<div class="app">
+  <aside class="side">
     <div class="brand">
       <span class="title">TOKENSCOPE</span>
       <span class="sub" data-i18n="brand_sub">tray · live local usage</span>
     </div>
-    <div class="controls">
-      <div class="meta"><span id="dot" class="dot"></span><span id="status">connecting…</span></div>
-      <div class="seg" id="tool">
-        <button data-t="" class="active">all</button>
-        <button data-t="claude_api">claude</button>
-        <button data-t="codex">codex</button>
-        <button data-t="antigravity">antigravity</button>
+    <div class="meta" role="status"><span id="dot" class="dot"></span><span id="status">connecting…</span></div>
+
+    <div class="grp">
+      <span class="lbl">// view</span>
+      <div class="nav" id="tool">
+        <button data-t="" class="active"><span class="sw" style="background:linear-gradient(135deg,var(--cClaude),var(--cCodex))"></span>all</button>
+        <button data-t="claude_api"><span class="sw" style="background:var(--cClaude)"></span>claude</button>
+        <button data-t="codex"><span class="sw" style="background:var(--cCodex)"></span>codex</button>
+        <button data-t="antigravity"><span class="sw" style="background:var(--cAg)"></span>antigravity</button>
       </div>
+    </div>
+
+    <div class="grp">
+      <span class="lbl">// range</span>
       <div class="seg" id="range">
         <button data-d="1">24h</button>
         <button data-d="7">7d</button>
@@ -177,117 +267,93 @@ INDEX_HTML = r"""<!doctype html>
         <button data-d="90">90d</button>
         <button data-d="100000">life</button>
       </div>
-      <div class="seg" id="lang">
-        <button data-l="en">EN</button>
-        <button data-l="fr">FR</button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="grp">
+      <span class="lbl">// settings</span>
+      <div class="pair">
+        <div class="seg" id="lang"><button data-l="en">EN</button><button data-l="fr">FR</button></div>
+        <div class="seg" id="theme"><button data-th="dark">dark</button><button data-th="light">light</button></div>
       </div>
-      <div class="seg" id="theme">
-        <button data-th="dark">dark</button>
-        <button data-th="light">light</button>
-      </div>
-      <div class="seg" id="export" title="export current summary">
-        <button data-x="csv">csv</button>
-        <button data-x="json">json</button>
-      </div>
+      <div class="seg" id="export" title="export current summary"><button data-x="csv">export csv</button><button data-x="json">export json</button></div>
       <a class="upd" id="upd" target="_blank" rel="noopener noreferrer"></a>
+      <a class="gh" href="https://github.com/inerthel-agi" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        github.com/inerthel-agi
+      </a>
     </div>
-  </div>
-</header>
+  </aside>
 
-<div class="wrap">
-  <section id="util-section">
-    <div class="lbl" style="margin-bottom:10px">// subscription_utilization</div>
-    <div class="grid g2" id="util-grid">
-      <div class="card" id="cl-card" data-key="util-claude"><div class="head"><span class="lbl"><span data-i18n="claude_sub">claude · subscription</span></span><span class="lbl" id="cl-src">—</span></div><div class="body" id="cl-body"></div></div>
-      <div class="card" id="cx-card" data-key="util-codex"><div class="head"><span class="lbl"><span data-i18n="codex_sub">codex · subscription</span></span><span class="lbl" id="cx-src">—</span></div><div class="body" id="cx-body"></div></div>
+  <main class="main">
+    <div class="top">
+      <div><h1 data-i18n="overview">overview</h1><div class="scope" id="scope">all · 30d</div></div>
+      <button class="chip" id="proj-chip" type="button"><span id="proj-chip-n"></span><b aria-hidden="true">✕</b></button>
     </div>
-  </section>
 
-  <section class="grid g4" id="cards"></section>
+    <section class="grid g4" id="cards"><div class="stat"><div class="skl" style="width:42%;height:9px"></div><div class="skl" style="width:68%;height:28px"></div><div class="skl" style="width:52%;height:9px"></div></div><div class="stat"><div class="skl" style="width:42%;height:9px"></div><div class="skl" style="width:68%;height:28px"></div><div class="skl" style="width:52%;height:9px"></div></div><div class="stat"><div class="skl" style="width:42%;height:9px"></div><div class="skl" style="width:68%;height:28px"></div><div class="skl" style="width:52%;height:9px"></div></div><div class="stat"><div class="skl" style="width:42%;height:9px"></div><div class="skl" style="width:68%;height:28px"></div><div class="skl" style="width:52%;height:9px"></div></div></section>
 
-  <section>
-    <div class="card" data-key="chart">
-      <div class="head"><span class="lbl">// tokens_over_time</span><span class="lbl legend" id="chart-legend"></span></div>
-      <div class="body chart-wrap">
-        <svg id="chart-svg" height="230" role="img" aria-label="Daily token usage"></svg>
-        <div class="chart-tip" id="chart-tip"></div>
-        <div class="empty" id="chart-empty" style="display:none"></div>
+    <div class="rowB">
+      <div class="card" data-key="chart">
+        <div class="head"><span class="lbl">// tokens_over_time</span><span class="lbl legend" id="chart-legend"></span></div>
+        <div class="body chart-wrap">
+          <svg id="chart-svg" height="250" style="display:none" role="img" aria-label="Daily token usage"></svg>
+          <div class="chart-tip" id="chart-tip"></div>
+          <div class="empty" id="chart-empty" style="display:none"></div>
+          <div class="skl chart-sk" id="chart-sk"></div>
+        </div>
       </div>
-    </div>
-  </section>
 
-  <section>
-    <div class="card" data-key="budget">
-      <div class="head"><span class="lbl">// budget · cost tracking</span><span class="lbl" id="bud-mode">—</span></div>
-      <div class="body">
-        <div id="bud-bars"></div>
-        <div class="grid g2" style="gap:12px;margin-top:2px">
-          <div><div class="lbl" style="margin-bottom:5px" data-i18n="daily_budget">daily budget ($)</div><input id="bud-daily" class="num" type="number" step="0.01" min="0"></div>
-          <div><div class="lbl" style="margin-bottom:5px" data-i18n="monthly_budget">monthly budget ($)</div><input id="bud-monthly" class="num" type="number" step="0.01" min="0"></div>
+      <div class="stack">
+        <div class="stack" id="util-section">
+          <div class="stack" id="util-grid">
+            <div class="card" id="cl-card" data-key="util-claude"><div class="head"><span class="lbl"><span data-i18n="claude_sub">claude · subscription</span></span><span class="lbl" id="cl-src">—</span></div><div class="body" id="cl-body"><div class="skl" style="height:9px;width:30%"></div><div class="skl" style="height:6px;margin:10px 0 18px"></div><div class="skl" style="height:9px;width:30%"></div><div class="skl" style="height:6px;margin-top:10px"></div></div></div>
+            <div class="card" id="cx-card" data-key="util-codex"><div class="head"><span class="lbl"><span data-i18n="codex_sub">codex · subscription</span></span><span class="lbl" id="cx-src">—</span></div><div class="body" id="cx-body"><div class="skl" style="height:9px;width:30%"></div><div class="skl" style="height:6px;margin:10px 0 18px"></div><div class="skl" style="height:9px;width:30%"></div><div class="skl" style="height:6px;margin-top:10px"></div></div></div>
+          </div>
         </div>
       </div>
     </div>
-  </section>
 
-  <section>
-    <div class="card" data-key="project">
-      <div class="head"><span class="lbl">// usage_by_project</span><span class="lbl" id="proj-n">0 projects</span></div>
-      <div style="overflow-x:auto"><table id="proj-table">
-        <thead><tr><th class="l" data-k="project">project</th><th class="l">tools</th><th data-k="in">in</th><th data-k="out">out</th><th data-k="total">total</th><th data-k="calls">calls</th><th data-k="cost">cost</th></tr></thead>
-        <tbody id="proj-rows"></tbody>
-      </table></div>
+    <div class="card cal" data-key="calendar">
+      <div class="head"><span class="lbl">// activity · 365d</span>
+        <span class="lbl"><span id="cal-sum"></span> &nbsp; <span class="cal-leg" aria-hidden="true">less
+          <i style="background:var(--barTrack)"></i><i style="opacity:.22"></i><i style="opacity:.45"></i><i style="opacity:.7"></i><i></i>more</span></span></div>
+      <div class="body"><div id="cal"><div class="skl" style="height:110px"></div></div></div>
     </div>
-  </section>
 
-  <section>
-    <div class="card" data-key="model">
-      <div class="head"><span class="lbl">// breakdown_by_model</span><span class="lbl" id="mdl-n">0 models</span></div>
-      <div style="overflow-x:auto"><table id="mdl-table">
-        <thead><tr><th class="l" data-k="tool">tool</th><th class="l" data-k="model">model</th><th data-k="in">in</th><th data-k="out">out</th><th data-k="total">total</th><th data-k="calls">calls</th><th data-k="cost">cost</th></tr></thead>
-        <tbody id="mdl-rows"></tbody>
-      </table></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="card about" data-key="about">
-      <div class="head"><span class="lbl"><span data-i18n="about_title">// about</span></span></div>
-      <div class="body">
-        <p data-i18n="about_body">TokenScope was built to monitor token consumption.</p>
-        <div class="brandbox">
-          <svg class="se" xmlns="http://www.w3.org/2000/svg" viewBox="-0.5 -0.5 12 8" role="img" aria-label="StealthyLabs" shape-rendering="crispEdges">
-            <defs><g id="se">
-              <rect x="0" y="0" width="5" height="1"/><rect x="0" y="1" width="1" height="2"/><rect x="0" y="3" width="5" height="1"/><rect x="4" y="4" width="1" height="2"/><rect x="0" y="6" width="5" height="1"/>
-              <rect x="6" y="0" width="1" height="7"/><rect x="7" y="0" width="4" height="1"/><rect x="7" y="3" width="3" height="1"/><rect x="7" y="6" width="4" height="1"/>
-            </g></defs>
-            <use href="#se" x="0.28" fill="#1fd8ff"/><use href="#se" x="-0.2" fill="#ff2e6e" opacity="0.4"/><use href="#se" fill="#ededed"/>
-          </svg>
-          <svg class="wm" xmlns="http://www.w3.org/2000/svg" viewBox="-0.5 -0.5 48.5 8" role="img" aria-label="Stealthy" shape-rendering="crispEdges">
-            <defs><g id="wm">
-              <rect x="0" y="0" width="5" height="1"/><rect x="0" y="1" width="1" height="2"/><rect x="0" y="3" width="5" height="1"/><rect x="4" y="4" width="1" height="2"/><rect x="0" y="6" width="5" height="1"/>
-              <rect x="6" y="0" width="5" height="1"/><rect x="8" y="1" width="1" height="6"/>
-              <rect x="12" y="0" width="1" height="7"/><rect x="13" y="0" width="4" height="1"/><rect x="13" y="3" width="3" height="1"/><rect x="13" y="6" width="4" height="1"/>
-              <rect x="18" y="1" width="1" height="6"/><rect x="22" y="1" width="1" height="6"/><rect x="19" y="0" width="3" height="1"/><rect x="19" y="3" width="3" height="1"/>
-              <rect x="24" y="0" width="1" height="7"/><rect x="25" y="6" width="4" height="1"/>
-              <rect x="30" y="0" width="5" height="1"/><rect x="32" y="1" width="1" height="6"/>
-              <rect x="36" y="0" width="1" height="7"/><rect x="40" y="0" width="1" height="7"/><rect x="37" y="3" width="3" height="1"/>
-              <rect x="42" y="0" width="1" height="3"/><rect x="46" y="0" width="1" height="3"/><rect x="43" y="2" width="3" height="1"/><rect x="44" y="3" width="1" height="4"/>
-            </g></defs>
-            <use href="#wm" x="0.28" fill="#1fd8ff"/><use href="#wm" x="-0.22" fill="#ff2e6e" opacity="0.4"/><use href="#wm" fill="#ededed"/>
-          </svg>
-        </div>
-        <span class="by" data-i18n="about_by">by StealthyLabs</span>
-        <div>
-          <a class="gh" href="https://github.com/inerthel-agi" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-            github.com/inerthel-agi
-          </a>
+    <div class="rowC">
+      <div class="card" data-key="project">
+        <div class="head"><span class="lbl">// usage_by_project</span><span class="lbl" id="proj-n">0 projects</span></div>
+        <div class="tbl"><table id="proj-table">
+          <thead><tr><th class="l" data-k="project">project</th><th data-k="total">tokens</th><th data-k="cost">cost</th></tr></thead>
+          <tbody id="proj-rows"><tr><td colspan="3"><div class="skl" style="height:11px;width:62%"></div><div class="skl" style="height:8px;width:31%;margin-top:7px"></div></td></tr><tr><td colspan="3"><div class="skl" style="height:11px;width:48%"></div><div class="skl" style="height:8px;width:24%;margin-top:7px"></div></td></tr><tr><td colspan="3"><div class="skl" style="height:11px;width:70%"></div><div class="skl" style="height:8px;width:35%;margin-top:7px"></div></td></tr><tr><td colspan="3"><div class="skl" style="height:11px;width:40%"></div><div class="skl" style="height:8px;width:20%;margin-top:7px"></div></td></tr></tbody>
+        </table></div>
+      </div>
+      <div class="card" data-key="model">
+        <div class="head"><span class="lbl">// breakdown_by_model</span><span class="lbl" id="mdl-n">0 models</span></div>
+        <div class="tbl"><table id="mdl-table">
+          <thead><tr><th class="l" data-k="model">model</th><th data-k="total">tokens</th><th data-k="cost">cost</th></tr></thead>
+          <tbody id="mdl-rows"><tr><td colspan="3"><div class="skl" style="height:11px;width:62%"></div><div class="skl" style="height:8px;width:31%;margin-top:7px"></div></td></tr><tr><td colspan="3"><div class="skl" style="height:11px;width:48%"></div><div class="skl" style="height:8px;width:24%;margin-top:7px"></div></td></tr><tr><td colspan="3"><div class="skl" style="height:11px;width:70%"></div><div class="skl" style="height:8px;width:35%;margin-top:7px"></div></td></tr><tr><td colspan="3"><div class="skl" style="height:11px;width:40%"></div><div class="skl" style="height:8px;width:20%;margin-top:7px"></div></td></tr></tbody>
+        </table></div>
+      </div>
+      <div class="card" data-key="budget">
+        <div class="head"><span class="lbl">// budget</span><span class="lbl" id="bud-mode">—</span></div>
+        <div class="body">
+          <div id="bud-bars"></div>
+          <div class="budin">
+            <label><div class="lbl" style="margin-bottom:5px" data-i18n="daily_budget">daily budget ($)</div><input id="bud-daily" class="num" type="number" step="0.01" min="0"></label>
+            <label><div class="lbl" style="margin-bottom:5px" data-i18n="monthly_budget">monthly budget ($)</div><input id="bud-monthly" class="num" type="number" step="0.01" min="0"></label>
+          </div>
         </div>
       </div>
     </div>
-  </section>
 
-  <div class="foot" id="foot" data-i18n="footer">TokenScope · live from ~/.claude &amp; ~/.codex · local-first · no external telemetry</div>
+    <footer class="foot">
+      <p data-i18n="about_body">TokenScope was built to monitor token consumption.</p>
+      <span class="fl" id="foot" data-i18n="footer">TokenScope · live from ~/.claude &amp; ~/.codex · local-first · no external telemetry</span>
+    </footer>
+  </main>
 </div>
 
 <script>
@@ -304,7 +370,7 @@ const I18N={
     live:"live", error:"error: {m}", claude_sub:"claude · subscription", codex_sub:"codex · subscription",
     subscription_word:"subscription", api_word:"api", na:"n/a",
     api_desc:"API mode ({plan}) · pay-as-you-go — cost = real spend",
-    cl_waiting:"waiting for usage data · open claude usage page to refresh",
+    cl_waiting:"waiting for usage data · sign-in expired: run claude in a terminal to renew it",
     cl_none:"not signed in (no subscription or API key)",
     cx_norate:"no rate-limit data", cx_none:"no codex rate-limit data in recent sessions",
     left:"{p}% left", calls_range:"{n} calls · range", prompt_fresh:"prompt (fresh)",
@@ -315,14 +381,16 @@ const I18N={
     bud_real:"real spend (api)", bud_est:"est. (subscription)", today:"today", month:"this month",
     over:" · over {x}", daily_budget:"daily budget ($)", monthly_budget:"monthly budget ($)",
     now:"now", in_prefix:"in", u_d:"d", u_h:"h", u_m:"m",
-    about_title:"// about", about_by:"by StealthyLabs",
+    overview:"overview", all_tools:"all tools", n_calls:"{n} calls", vs_prev:"vs prev. {r}", new_period:"new", price_unknown:"price unknown", n_unpriced:"{n} unpriced",
+    price_unknown_tip:"No list price for this model: add it to ~/.tokenscope/pricing.json",
+    forecast:"month-end forecast", cal_sum:"{d} active days · {n} tokens", clear_project:"clear project filter",
     about_body:"TokenScope was built to monitor token consumption and usage across Claude Code and Codex — to see, in one place and in real time, how many tokens I burn per project and per model, what it costs, and how much of my subscription quota is left. Local-first: it only reads my own session files, with no telemetry.",
     footer:"TokenScope · live from ~/.claude & ~/.codex · local-first · no external telemetry" },
   fr:{ brand_sub:"tray · usage local en direct", connecting:"connexion…", loading:"chargement {r}…",
     live:"en direct", error:"erreur : {m}", claude_sub:"claude · abonnement", codex_sub:"codex · abonnement",
     subscription_word:"abonnement", api_word:"api", na:"n/d",
     api_desc:"mode API ({plan}) · paiement à l'usage — coût = dépense réelle",
-    cl_waiting:"en attente de données · ouvre la page d'usage claude pour rafraîchir",
+    cl_waiting:"en attente de données · connexion expirée : lance claude dans un terminal pour la renouveler",
     cl_none:"non connecté (aucun abonnement ni clé API)",
     cx_norate:"aucune donnée de limite", cx_none:"aucune donnée de limite codex dans les sessions récentes",
     left:"{p}% restant", calls_range:"{n} appels · plage", prompt_fresh:"prompt (frais)",
@@ -333,14 +401,17 @@ const I18N={
     bud_real:"dépense réelle (api)", bud_est:"est. (abonnement)", today:"aujourd'hui", month:"ce mois",
     over:" · dépassé de {x}", daily_budget:"budget quotidien ($)", monthly_budget:"budget mensuel ($)",
     now:"maintenant", in_prefix:"dans", u_d:"j", u_h:"h", u_m:"m",
-    about_title:"// à propos", about_by:"par StealthyLabs",
+    overview:"vue d'ensemble", all_tools:"tous les outils", n_calls:"{n} appels", vs_prev:"vs {r} préc.", new_period:"nouveau", price_unknown:"prix inconnu", n_unpriced:"{n} sans prix",
+    price_unknown_tip:"Pas de tarif connu pour ce modèle : ajoute-le dans ~/.tokenscope/pricing.json",
+    forecast:"prévision fin de mois", cal_sum:"{d} jours actifs · {n} tokens", clear_project:"retirer le filtre projet",
     about_body:"TokenScope a été créé pour monitorer la consommation et l'usage des tokens sur Claude Code et Codex — voir, au même endroit et en temps réel, combien de tokens je consomme par projet et par modèle, ce que ça coûte, et combien il reste de mon quota d'abonnement. Local-first : il lit uniquement mes propres fichiers de session, sans aucune télémétrie.",
     footer:"TokenScope · en direct depuis ~/.claude & ~/.codex · local-first · aucune télémétrie externe" }
 };
 let LANG=localStorage.getItem("tokenscope.lang")==="fr"?"fr":"en";
 const t=(k,v={})=>(I18N[LANG][k]??I18N.en[k]??k).replace(/\{(\w+)\}/g,(_,n)=>v[n]??"");
 function applyStatic(){document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n);});}
-function setStatus(){document.getElementById("status").textContent=t("live")+" · "+new Date().toISOString().slice(11,19)+" UTC";}
+// Local wall-clock time (was UTC, an hour behind in Paris winter time).
+function setStatus(){document.getElementById("status").textContent=t("live")+" · "+new Date().toLocaleTimeString(LANG==="fr"?"fr-FR":"en-GB",{hour12:false});}
 let THEME=localStorage.getItem("tokenscope.theme")==="light"?"light":"dark";
 function syncWindowTheme(){fetch("/api/theme?theme="+encodeURIComponent(THEME),{cache:"no-store"}).catch(()=>{});}
 function applyTheme(){if(THEME==="light")document.documentElement.setAttribute("data-theme","light");else document.documentElement.removeAttribute("data-theme");syncWindowTheme();}
@@ -382,7 +453,9 @@ function bar(label,pct,reset){pct=Math.max(0,Math.min(100,Number(pct)||0));
   const cls=pct>=90?"bad":pct>=75?"warn":"";
   return `<div class="b5"><div class="barhd"><span>${esc(label)}</span>
     <span><span class="r">${esc(fmtReset(reset))}</span> &nbsp; <span class="p">${pct.toFixed(0)}%</span></span></div>
-    <div class="bar ${cls}"><i style="width:${pct}%"></i></div></div>`;}
+    <div class="bar ${cls}"><i style="width:${pct}%;${PULSE()}"></i></div></div>`;}
+// Bars are re-rendered every second: offset the pulse by wall-clock time so it stays smooth.
+const PULSE=()=>`animation-delay:-${Date.now()%1600}ms`;
 
 // Codex shows REMAINING (100% full -> 0% = all used); red when low.
 function barRemain(label,usedPct,reset){
@@ -390,7 +463,7 @@ function barRemain(label,usedPct,reset){
   const cls=rem<=10?"bad":rem<=25?"warn":"";
   return `<div class="b5"><div class="barhd"><span>${esc(label)}</span>
     <span><span class="r">${esc(fmtReset(reset))}</span> &nbsp; <span class="p">${esc(t("left",{p:rem.toFixed(0)}))}</span></span></div>
-    <div class="bar ${cls}"><i style="width:${rem}%"></i></div></div>`;
+    <div class="bar ${cls}"><i style="width:${rem}%;${PULSE()}"></i></div></div>`;
 }
 
 function renderUtil(u){
@@ -426,40 +499,67 @@ function renderUtil(u){
   let h="";
   h+=cxRow("5h",cx&&cx.primary);
   h+=cxRow("weekly",cx&&cx.secondary);
-  h+=`<div class="barhd" style="padding-top:4px;border-top:1px solid var(--rowLine)"><span>${esc((cx&&cx.spark_label)||"GPT-5.3-Codex-Spark")}</span></div>`;
-  h+=cxRow("5h",cx&&cx.spark_primary);
-  h+=cxRow("weekly",cx&&cx.spark_secondary);
   if(cx&&cx.credits!=null)h+=`<div class="barhd" style="padding-top:4px;border-top:1px solid var(--rowLine)"><span>credits</span><span class="w p">${esc(cx.credits)}</span></div>`;
   cxb.innerHTML=h;
 }
 
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const KPI_PREV=[];
+// Rolls a KPI from its previous value to the new one (ease-out, 700 ms); instant when unchanged.
+function countUp(el,from,to,fmt){
+  if(REDUCED||from===to){ el.textContent=fmt(to); return; }
+  const t0=performance.now();
+  const step=now=>{ const p=Math.min(1,(now-t0)/700), e=1-Math.pow(1-p,3);
+    el.textContent=fmt(from+(to-from)*e); if(p<1) requestAnimationFrame(step); };
+  el.textContent=fmt(from); requestAnimationFrame(step);
+}
 function renderSummary(s){
   const tot=(s&&s.totals)||{input_tokens:0,output_tokens:0,total_tokens:0,cost_usd:0,entries:0};
-  document.getElementById("cards").innerHTML=[
-    ["total_tokens",fmtN(tot.total_tokens),t("calls_range",{n:(tot.entries||0)})],
-    ["input_tokens",fmtN(tot.input_tokens),t("prompt_fresh")],
-    ["output_tokens",fmtN(tot.output_tokens),t("completion")],
-    ["total_cost_usd",fmtC(tot.cost_usd),t("cache_est",{n:fmtN(tot.cache_read_tokens)})],
-  ].map(c=>`<div class="stat"><div class="lbl">${c[0]}</div><div class="v">${c[1]}</div><div class="s">${c[2]}</div></div>`).join("");
+  const kpis=[
+    ["total_tokens",tot.total_tokens||0,fmtN,t("calls_range",{n:(tot.entries||0)})],
+    ["input_tokens",tot.input_tokens||0,fmtN,t("prompt_fresh")],
+    ["output_tokens",tot.output_tokens||0,fmtN,t("completion")],
+    ["total_cost_usd",tot.cost_usd||0,fmtC,t("cache_est",{n:fmtN(tot.cache_read_tokens)})
+      +(tot.unpriced_entries?" · "+t("n_unpriced",{n:fmtN(tot.unpriced_entries)}):"")],
+  ];
+  const cards=document.getElementById("cards");
+  cards.innerHTML=kpis.map((c,i)=>`<div class="stat${i===3?" hl":""}"><div class="lbl">${c[0]}</div><div class="v"></div><div class="s">${c[3]}</div></div>`).join("");
+  cards.querySelectorAll(".v").forEach((el,i)=>{ countUp(el,KPI_PREV[i]??0,kpis[i][1],kpis[i][2]); KPI_PREV[i]=kpis[i][1]; });
+  // vs previous period of the same length: totals(2N) - totals(N). Cost up = red, down = green.
+  const P=LAST_P&&LAST_P.totals;
+  if(P) ["total_tokens","input_tokens","output_tokens","cost_usd"].forEach((k,i)=>{
+    const cur=tot[k]||0, prev=Math.max(0,(P[k]||0)-cur);
+    let h;
+    if(!prev) h=cur?`<div class="dl">${esc(t("new_period"))}</div>`:"";
+    else { const pct=(cur-prev)/prev*100, up=pct>=0;
+      h=`<div class="dl ${i===3?(up?"bad":"good"):""}">${up?"▲":"▼"} ${Math.abs(pct).toFixed(0)}% <span>${esc(t("vs_prev",{r:rangeLabel(DAYS)}))}</span></div>`; }
+    cards.children[i].insertAdjacentHTML("beforeend",h);
+  });
+  document.getElementById("scope").textContent=(TOOL?TOOL_LABEL[TOOL]:t("all_tools"))+" · "+rangeLabel(DAYS);
+
+  // Each row carries a thin share-of-cost bar (relative to the costliest row), colored by tool.
+  const TOOL_COLOR={claude_api:"var(--cClaude)",codex:"var(--cCodex)",antigravity:"var(--cAg)"};
+  const share=(r,max,color)=>`<div class="share"><i style="width:${max>0?Math.max(1,(r.cost_usd||0)/max*100):0}%;background:${color}"></i></div>`;
+  const nums=r=>`<td class="w" title="in ${fmtN(r.input_tokens)} · out ${fmtN(r.output_tokens)}">${fmtN((r.input_tokens||0)+(r.output_tokens||0))}</td>
+    <td class="w">${r.unpriced?`<span class="muted" title="${esc(t("price_unknown_tip"))}">—</span>`:fmtC(r.cost_usd)}</td>`;
+  const calls=r=>esc(t("n_calls",{n:fmtN(r.entries||0)}));
 
   const pr=sortRows((s&&s.by_project)||[], SORT.proj);
+  const pMax=Math.max(0,...pr.map(r=>r.cost_usd||0));
   document.getElementById("proj-n").textContent=t("projects",{n:pr.length});
-  document.getElementById("proj-rows").innerHTML=pr.length?pr.map(r=>`<tr>
-    <td class="l w" title="${esc(r.project)}">${esc(r.project_name||r.project)}</td>
-    <td class="l">${Object.keys(r.tools||{}).map(k=>`<span class="tag">${esc(TOOL_LABEL[k]||k)}</span>`).join("")}</td>
-    <td class="muted">${fmtN(r.input_tokens)}</td><td class="muted">${fmtN(r.output_tokens)}</td>
-    <td class="w">${fmtN((r.input_tokens||0)+(r.output_tokens||0))}</td>
-    <td class="muted">${r.entries}</td><td class="w">${fmtC(r.cost_usd)}</td></tr>`).join("")
-    :`<tr><td colspan="7" class="empty">${esc(t("no_project"))}</td></tr>`;
+  document.getElementById("proj-rows").innerHTML=pr.length?pr.map(r=>{
+    const tools=Object.keys(r.tools||{});
+    return `<tr data-p="${esc(r.project)}" data-n="${esc(r.project_name||r.project)}" tabindex="0"><td class="l nm" title="${esc(r.project)}"><span class="n w">${esc(r.project_name||r.project)}</span>
+      <span class="x">${tools.map(k=>esc(TOOL_LABEL[k]||k)).join(" · ")} · ${calls(r)}</span>${share(r,pMax,TOOL_COLOR[tools[0]]||"var(--barFill)")}</td>${nums(r)}</tr>`;}).join("")
+    :`<tr><td colspan="3" class="empty">${esc(t("no_project"))}</td></tr>`;
 
   const md=sortRows((s&&s.by_model)||[], SORT.mdl);
+  const mMax=Math.max(0,...md.map(r=>r.cost_usd||0));
   document.getElementById("mdl-n").textContent=t("models",{n:md.length});
   document.getElementById("mdl-rows").innerHTML=md.length?md.map(r=>`<tr>
-    <td class="l muted">${esc(TOOL_LABEL[r.tool]||r.tool)}</td><td class="l w" title="${esc(r.model)}">${esc(prettyModel(r.model))}</td>
-    <td class="muted">${fmtN(r.input_tokens)}</td><td class="muted">${fmtN(r.output_tokens)}</td>
-    <td class="w">${fmtN((r.input_tokens||0)+(r.output_tokens||0))}</td>
-    <td class="muted">${r.entries}</td><td class="w">${fmtC(r.cost_usd)}</td></tr>`).join("")
-    :`<tr><td colspan="7" class="empty">${esc(t("no_model"))}</td></tr>`;
+    <td class="l nm" title="${esc(r.model)}"><span class="n w">${esc(prettyModel(r.model))}</span>
+      <span class="x">${esc(TOOL_LABEL[r.tool]||r.tool)} · ${calls(r)}${r.unpriced?` <span class="unp">${esc(t("price_unknown"))}</span>`:""}</span>${share(r,mMax,TOOL_COLOR[r.tool]||"var(--barFill)")}</td>${nums(r)}</tr>`).join("")
+    :`<tr><td colspan="3" class="empty">${esc(t("no_model"))}</td></tr>`;
 }
 
 // --- tokens_over_time: dependency-free stacked-bar SVG, theme-aware via CSS vars ---
@@ -494,8 +594,9 @@ function chartDays(s){
   }
   return out;
 }
-function niceMax(v){ if(v<=0)return 1; const p=Math.pow(10,Math.floor(Math.log10(v))); const u=v/p;
-  return (u<=1?1:u<=2?2:u<=5?5:10)*p; }
+// Axis top: smallest of 1/2/3/4/6/8/10 x 10^k above v — tight fit, quarters stay readable.
+function niceMax(v){ if(v<=0)return 1; const p=Math.pow(10,Math.floor(Math.log10(v))), u=v/p;
+  return [1,2,3,4,6,8,10].find(x=>u<=x+1e-9)*p; }
 function renderChart(s){
   const svg=document.getElementById("chart-svg"), tip=document.getElementById("chart-tip"),
         empty=document.getElementById("chart-empty"), legend=document.getElementById("chart-legend");
@@ -506,55 +607,95 @@ function renderChart(s){
   const hasData=days.some(d=>tools.some(([k])=>(d[k]||0)>0));
   svg.style.display=hasData?"":"none";
   empty.style.display=hasData?"none":"";
+  document.getElementById("chart-sk").style.display="none";
   if(!hasData){ empty.textContent=t("no_chart"); tip.style.display="none"; return; }
-  const W=Math.max(320,svg.clientWidth||svg.parentElement.clientWidth||800), H=230,
-        padL=44, padR=8, padT=10, padB=22, iw=W-padL-padR, ih=H-padT-padB;
+  // Height follows the stretched card (matches the quota column beside it); collapse the svg
+  // first so its old height does not keep the card tall. Body padding = 32px.
+  svg.setAttribute("height",0);
+  const H=Math.max(230,Math.min(460,svg.parentElement.clientHeight-32));
+  const W=Math.max(320,svg.clientWidth||svg.parentElement.clientWidth||800),
+        padL=48, padR=52, padT=14, padB=24, iw=W-padL-padR, ih=H-padT-padB, base=padT+ih;
   const max=niceMax(Math.max(...days.map(d=>tools.reduce((a,[k])=>a+(d[k]||0),0))));
-  const n=days.length, slot=iw/n, bw=Math.max(1.5,Math.min(26,slot*0.62));
+  const costMax=niceMax(Math.max(...days.map(d=>d.cost_usd||0)));
+  const hasCost=days.some(d=>(d.cost_usd||0)>0);
+  const n=days.length, slot=iw/n, bw=Math.max(2,Math.min(22,slot*0.56));
+  const cx=i=>padL+slot*i+slot/2, cy=d=>base-(d.cost_usd||0)/costMax*ih;
   svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.setAttribute("width",W); svg.setAttribute("height",H);
-  let g="";
-  for(let i=0;i<=4;i++){                                     // y grid + labels
-    const y=padT+ih-ih*i/4;
-    g+=`<line class="grid" x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}"/>`;
-    g+=`<text x="${padL-6}" y="${y+3}" text-anchor="end">${fmtN(max*i/4)}</text>`;
+  let g=`<defs><linearGradient id="costFill" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#22c55e" stop-opacity=".28"/><stop offset="1" stop-color="#22c55e" stop-opacity="0"/></linearGradient></defs>`;
+  for(let i=0;i<=4;i++){                                     // y grid: tokens left, cost right
+    const y=base-ih*i/4;
+    g+=`<line class="${i?"grid dash":"grid axis"}" x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}"/>`;
+    g+=`<text x="${padL-8}" y="${y+3}" text-anchor="end">${i?fmtN(max*i/4):"0"}</text>`;
+    if(hasCost) g+=`<text class="cost" x="${W-padR+8}" y="${y+3}">${i?esc(fmtC(costMax*i/4)):"$0"}</text>`;
   }
   const step=DAYS===1?3:Math.max(1,Math.ceil(n/10));         // sparse x labels (every 3h on 24h view)
   days.forEach((d,i)=>{
-    if(i%step===0) g+=`<text x="${padL+slot*i+slot/2}" y="${H-6}" text-anchor="middle">${esc(d.lbl??(d.day||"").slice(5))}</text>`;
+    if(i%step===0) g+=`<text x="${cx(i)}" y="${H-6}" text-anchor="middle">${esc(d.lbl??(d.day||"").slice(5))}</text>`;
   });
+  // Stacked bars, one <g> per day so hover can dim the others; only the top segment is rounded.
   days.forEach((d,i)=>{
-    const x=padL+slot*i+(slot-bw)/2; let y=padT+ih;
-    tools.forEach(([k,c])=>{
-      const v=d[k]||0; if(!v)return;
-      const h=Math.max(v>0?1:0, v/max*ih); y-=h;
-      g+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" style="fill:${c}"/>`;
+    const x=cx(i)-bw/2; let y=base, segs="";
+    const vis=tools.filter(([k])=>(d[k]||0)>0);
+    vis.forEach(([k,c],j)=>{
+      const h=Math.max(1,(d[k]||0)/max*ih); y-=h;
+      const r=j===vis.length-1?Math.min(3,bw/2,h):0;
+      segs+=r?`<path d="M${x.toFixed(1)},${(y+h).toFixed(1)}V${(y+r).toFixed(1)}q0,-${r} ${r},-${r}h${(bw-2*r).toFixed(1)}q${r},0 ${r},${r}V${(y+h).toFixed(1)}Z" style="fill:${c}"/>`
+              :`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" style="fill:${c}"/>`;
     });
-    g+=`<rect class="hband" data-i="${i}" x="${(padL+slot*i).toFixed(1)}" y="${padT}" width="${slot.toFixed(1)}" height="${ih}"/>`;
+    g+=`<g class="day" data-i="${i}" style="--i:${i}">${segs}</g>`;
   });
-  // Daily cost overlay: green line on its own scale (top of plot = costMax).
-  const costMax=niceMax(Math.max(...days.map(d=>d.cost_usd||0)));
-  if(costMax>0 && days.some(d=>(d.cost_usd||0)>0)){
-    const pts=days.map((d,i)=>`${(padL+slot*i+slot/2).toFixed(1)},${(padT+ih-(d.cost_usd||0)/costMax*ih).toFixed(1)}`).join(" ");
-    g+=n>1?`<polyline points="${pts}" fill="none" stroke="#22c55e" stroke-width="1.5" opacity=".9"/>`
-          :`<circle cx="${padL+slot/2}" cy="${(padT+ih-(days[0].cost_usd||0)/costMax*ih).toFixed(1)}" r="3" fill="#22c55e"/>`;
-    g+=`<text x="${W-padR}" y="${padT+9}" text-anchor="end" style="fill:#22c55e">${esc(fmtC(costMax))}</text>`;
+  // Daily cost: monotone smooth curve (no overshoot below zero) + soft area on its own scale.
+  if(hasCost){
+    const pts=days.map((d,i)=>[cx(i),cy(d)]);
+    if(n>1){
+      const line=smoothPath(pts);
+      g+=`<path class="area" d="${line}L${pts[n-1][0].toFixed(1)},${base}L${pts[0][0].toFixed(1)},${base}Z" fill="url(#costFill)"/>`;
+      g+=`<path class="curve" pathLength="1" d="${line}" fill="none" stroke="#22c55e" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    } else g+=`<circle cx="${pts[0][0]}" cy="${pts[0][1]}" r="3.5" fill="#22c55e"/>`;
   }
+  g+=`<g id="chart-hover"></g><rect class="hzone" x="${padL}" y="${padT}" width="${iw}" height="${ih}"/>`;
   svg.innerHTML=g;
-  svg.onmouseleave=()=>{ tip.style.display="none"; };
+  // Intro (bars grow, curve draws) only when the range/tool changed, not on the 10 s refresh.
+  svg.classList.toggle("intro",ANIM_CHART&&!REDUCED); ANIM_CHART=false;
+  svg.style.setProperty("--stagger",Math.min(18,450/n)+"ms");
+  const hover=svg.querySelector("#chart-hover");
+  const hide=()=>{ tip.style.display="none"; hover.innerHTML=""; svg.classList.remove("hov");
+    svg.querySelectorAll(".day.on").forEach(x=>x.classList.remove("on")); };
+  svg.onmouseleave=hide;
   svg.onmousemove=e=>{
-    const b=e.target.closest(".hband"); if(!b){ tip.style.display="none"; return; }
-    const d=days[Number(b.dataset.i)]; if(!d) return;
+    const r=svg.getBoundingClientRect(), mx=(e.clientX-r.left)*W/r.width;
+    const i=Math.floor((mx-padL)/slot), d=days[i];
+    if(!d||mx<padL||mx>W-padR){ hide(); return; }
+    svg.classList.add("hov");
+    svg.querySelectorAll(".day").forEach(x=>x.classList.toggle("on",Number(x.dataset.i)===i));
+    hover.innerHTML=`<line class="guide" x1="${cx(i)}" y1="${padT}" x2="${cx(i)}" y2="${base}"/>`
+      +(hasCost?`<circle cx="${cx(i)}" cy="${cy(d)}" r="4" fill="var(--surface)" stroke="#22c55e" stroke-width="2"/>`:"");
     const rows=tools.map(([k,c])=>`<div class="tr"><span class="n"><span class="sw" style="background:${c}"></span>${esc(TOOL_LABEL[k]||k)}</span><span class="v">${fmtN(d[k]||0)}</span></div>`).join("");
     const tot=tools.reduce((a,[k])=>a+(d[k]||0),0);
     tip.innerHTML=`<div class="td">${esc(d.day)}</div>${rows}
       <div class="tr tt"><span class="n">${esc(t("tt_total"))}</span><span class="v">${fmtN(tot)}</span></div>
-      <div class="tr"><span class="n">${esc(t("tt_cost"))}</span><span class="v">${fmtC(d.cost_usd)}</span></div>`;
+      <div class="tr"><span class="n"><span class="sw" style="background:#22c55e"></span>${esc(t("tt_cost"))}</span><span class="v">${fmtC(d.cost_usd)}</span></div>`;
     tip.style.display="block";
     const wrap=svg.parentElement.getBoundingClientRect(), tw=tip.offsetWidth;
-    let lx=e.clientX-wrap.left+14; if(lx+tw>wrap.width-8) lx=e.clientX-wrap.left-tw-14;
+    let lx=e.clientX-wrap.left+16; if(lx+tw>wrap.width-8) lx=e.clientX-wrap.left-tw-16;
     tip.style.left=Math.max(4,lx)+"px";
     tip.style.top=Math.max(4,e.clientY-wrap.top-10)+"px";
   };
+}
+// Monotone cubic (Fritsch–Carlson) through [x,y] points: smooth, never overshoots the data,
+// so a day at $0 stays on the baseline instead of dipping below it.
+function smoothPath(p){
+  const n=p.length, dx=[], m=[], t=[];
+  for(let i=0;i<n-1;i++){ dx[i]=p[i+1][0]-p[i][0]; m[i]=(p[i+1][1]-p[i][1])/dx[i]; }
+  t[0]=m[0]; t[n-1]=m[n-2];
+  for(let i=1;i<n-1;i++) t[i]=m[i-1]*m[i]<=0?0:3*(dx[i-1]+dx[i])/((2*dx[i]+dx[i-1])/m[i-1]+(dx[i]+2*dx[i-1])/m[i]);
+  let d=`M${p[0][0].toFixed(1)},${p[0][1].toFixed(1)}`;
+  for(let i=0;i<n-1;i++){
+    const h=dx[i]/3;
+    d+=`C${(p[i][0]+h).toFixed(1)},${(p[i][1]+t[i]*h).toFixed(1)} ${(p[i+1][0]-h).toFixed(1)},${(p[i+1][1]-t[i+1]*h).toFixed(1)} ${p[i+1][0].toFixed(1)},${p[i+1][1].toFixed(1)}`;
+  }
+  return d;
 }
 let _rsz; window.addEventListener("resize",()=>{ clearTimeout(_rsz); _rsz=setTimeout(()=>{ if(LAST_S) renderChart(LAST_S); },150); });
 
@@ -599,7 +740,7 @@ function download(name,blob){
 }
 document.getElementById("export").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b||!LAST_S)return;
-  const stamp=new Date().toISOString().slice(0,10), range=rangeLabel(DAYS)+(TOOL?"_"+TOOL:"");
+  const stamp=localDay(new Date()), range=rangeLabel(DAYS)+(TOOL?"_"+TOOL:"");
   if(b.dataset.x==="json"){
     download(`tokenscope_${range}_${stamp}.json`,
       new Blob([JSON.stringify(LAST_S,null,2)],{type:"application/json"}));
@@ -661,7 +802,13 @@ function renderBudget(bs,u){
   let td=0, mo=0;
   byday.forEach(d=>{ if(d.day===today) td+=d.cost_usd||0; if((d.day||"").startsWith(month)) mo+=d.cost_usd||0; });
   const dCap=getBud(LS_D,10), mCap=getBud(LS_M,200);
-  document.getElementById("bud-bars").innerHTML=budBar(t("today"),td,dCap)+budBar(t("month"),mo,mCap);
+  // Month-end forecast: month-to-date spend + remaining days at the last-7-days average
+  // (a month-to-date average is wild on the 1st: one day x 30).
+  const now=new Date(), dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const last7=new Set([...Array(7)].map((_,i)=>localDay(new Date(now-i*864e5))));
+  const avg7=byday.reduce((a,d)=>a+(last7.has(d.day)?d.cost_usd||0:0),0)/7;
+  const fc=mo+avg7*(dim-now.getDate());
+  document.getElementById("bud-bars").innerHTML=budBar(t("today"),td,dCap)+budBar(t("month"),mo,mCap)+budBar(t("forecast"),fc,mCap);
   const api=(u&&u.claude&&u.claude.mode==="api")||(u&&u.codex&&u.codex.auth_mode==="apikey");
   document.getElementById("bud-mode").textContent=api?t("bud_real"):t("bud_est");
   const di=document.getElementById("bud-daily"), mi=document.getElementById("bud-monthly");
@@ -671,21 +818,35 @@ function renderBudget(bs,u){
 
 let LOAD_SEQ=0, LAST_B=null;
 function okJson(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); }
+let VIEW_KEY="", ANIM_CHART=false, LAST_P=null, PROJECT="", CAL=null;  // CAL: {url, t, v}
+const filters=()=>(TOOL?"&tool="+TOOL:"")+(PROJECT?"&project="+encodeURIComponent(PROJECT):"");
+// The 371-day calendar changes slowly: refetch on filter change or every 5 min.
+async function calendarData(){
+  const url="/api/local/summary?days=371"+filters();
+  if(!CAL||CAL.url!==url||Date.now()-CAL.t>3e5) CAL={url,t:Date.now(),v:await fetch(url).then(okJson).catch(()=>null)};
+  return CAL.v;
+}
 async function load(){
   const my=++LOAD_SEQ;  // drop stale responses: a slow "life" fetch must not overwrite a newer range
+  const key=DAYS+"|"+TOOL+"|"+PROJECT, changed=key!==VIEW_KEY;
+  if(changed && VIEW_KEY) document.body.classList.add("busy");  // dim stale numbers while switching
   LOADING=true;
   document.getElementById("dot").className="dot busy";
   document.getElementById("status").textContent=t("loading",{r:rangeLabel(DAYS)});
   try{
-    const [sr,ur,br]=await Promise.all([
-      fetch("/api/local/summary?days="+DAYS+(TOOL?"&tool="+TOOL:"")).then(okJson),
+    const [sr,ur,br,pr,cr]=await Promise.all([
+      fetch("/api/local/summary?days="+DAYS+filters()).then(okJson),
       fetch("/api/local/utilization").then(okJson).catch(()=>null),
       fetch("/api/local/summary?days=31").then(okJson).catch(()=>null),  // budget: unfiltered month
+      DAYS<100000?fetch("/api/local/summary?days="+DAYS*2+filters()).then(okJson).catch(()=>null):null,  // previous period
+      calendarData(),
     ]);
     if(my!==LOAD_SEQ) return;
     if(sr&&sr.error) throw new Error(sr.error);
-    LAST_S=sr; LAST_U=ur; LAST_B=br;
-    renderSummary(sr); renderChart(sr); renderUtil(ur); renderBudget(br,ur);
+    LAST_S=sr; LAST_U=ur; LAST_B=br; LAST_P=pr;
+    renderCalendar(cr);
+    if(changed){ VIEW_KEY=key; ANIM_CHART=true; }
+    renderSummary(sr); renderUtil(ur); renderBudget(br,ur); renderChart(sr);  // chart last: sized to the quota column
     document.getElementById("dot").className="dot ok";
     setStatus();
   }catch(e){
@@ -693,7 +854,7 @@ async function load(){
     document.getElementById("dot").className="dot";
     document.getElementById("status").textContent=t("error",{m:e.message});
   }finally{
-    if(my===LOAD_SEQ) LOADING=false;
+    if(my===LOAD_SEQ){ LOADING=false; document.body.classList.remove("busy"); }
   }
 }
 
@@ -709,6 +870,51 @@ document.getElementById("range").addEventListener("click",e=>{
     renderBudget(LAST_B, LAST_U);
   });
 });
+// --- project drill-down: clicking a project filters the whole dashboard to it ---
+function setProject(p,name){
+  PROJECT=p||"";
+  const chip=document.getElementById("proj-chip");
+  chip.classList.toggle("on",!!PROJECT);
+  chip.title=t("clear_project");
+  document.getElementById("proj-chip-n").textContent=name||"";
+  load();
+}
+document.getElementById("proj-chip").addEventListener("click",()=>setProject("",""));
+document.getElementById("proj-rows").addEventListener("click",e=>{
+  const tr=e.target.closest("tr[data-p]"); if(tr&&!PROJECT) setProject(tr.dataset.p,tr.dataset.n);
+});
+document.getElementById("proj-rows").addEventListener("keydown",e=>{
+  const tr=e.target.closest("tr[data-p]"); if(tr&&e.key==="Enter"&&!PROJECT) setProject(tr.dataset.p,tr.dataset.n);
+});
+
+// --- activity calendar: one cell per local day over 53 weeks, 5 quartile levels ---
+function renderCalendar(s){
+  const box=document.getElementById("cal"); if(!s) return;
+  const map={}; (s.by_day||[]).forEach(d=>{ if(d.day) map[d.day]=d; });
+  const tok=d=>(d.claude_api||0)+(d.codex||0)+(d.antigravity||0);
+  const vals=Object.values(map).map(tok).filter(v=>v>0).sort((a,b)=>a-b);
+  const q=f=>vals.length?vals[Math.min(vals.length-1,Math.floor(f*vals.length))]:0;
+  const cut=[q(.25),q(.5),q(.75)], level=v=>!v?0:v<=cut[0]?1:v<=cut[1]?2:v<=cut[2]?3:4;
+  const loc=LANG==="fr"?"fr-FR":"en-US";
+  const today=new Date(); today.setHours(0,0,0,0);
+  const start=new Date(today); start.setDate(start.getDate()-(today.getDay()+6)%7-52*7);  // Monday, 52 weeks back
+  const C=12,G=3,L=30,T=16; let g="", lastM=-1, lastW=-9, total=0, active=0;
+  for(let d=new Date(start),i=0; d<=today; d.setDate(d.getDate()+1),i++){
+    const w=Math.floor(i/7), r=(d.getDay()+6)%7, k=localDay(d), e=map[k], v=e?tok(e):0;
+    if(v){ total+=v; active++; }
+    if(r===0&&d.getMonth()!==lastM){ lastM=d.getMonth();
+      if(w-lastW>=3){ lastW=w;  // skip a month label that would overlap the previous one
+        g+=`<text x="${L+w*(C+G)}" y="10">${esc(d.toLocaleDateString(loc,{month:"short"}))}</text>`; } }
+    g+=`<rect class="c l${level(v)}" x="${L+w*(C+G)}" y="${T+r*(C+G)}" width="${C}" height="${C}" rx="2.5"><title>${esc(d.toLocaleDateString(loc,{weekday:"short",day:"numeric",month:"short",year:"numeric"}))} · ${fmtN(v)} tokens · ${fmtC(e?e.cost_usd:0)}</title></rect>`;
+  }
+  [0,2,4].forEach(r=>{ const d=new Date(2024,0,1+r);  // 2024-01-01 is a Monday
+    g+=`<text x="0" y="${T+r*(C+G)+C-2}">${esc(d.toLocaleDateString(loc,{weekday:"short"}))}</text>`; });
+  const W=L+53*(C+G), H=T+7*(C+G);
+  box.style.setProperty("--calFill",TOOL?({claude_api:"var(--cClaude)",codex:"var(--cCodex)",antigravity:"var(--cAg)"})[TOOL]:"var(--barFill)");
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily activity, last 12 months">${g}</svg>`;
+  document.getElementById("cal-sum").textContent=t("cal_sum",{d:active,n:fmtN(total)});
+}
+
 document.getElementById("tool").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b)return;
   TOOL=b.dataset.t;
@@ -828,8 +1034,6 @@ TRAY_HTML = r"""<!doctype html>
     <div class="sect" onclick="toggleGrp('codex')">Codex · usage limits<span class="car">▾</span></div>
     <div class="gbody">
       <div id="codex"></div>
-      <div class="sub">GPT-5.3-Codex-Spark</div>
-      <div id="spark"></div>
     </div>
   </div>
   <div class="sep"></div>
@@ -879,8 +1083,6 @@ async function refreshTray(){
   document.getElementById("claude").innerHTML = claudeRows(u);
   document.getElementById("codex").innerHTML =
     row("5h",codexLeft(cx,"primary"))+row("Weekly",codexLeft(cx,"secondary"));
-  document.getElementById("spark").innerHTML =
-    row("5h",codexLeft(cx,"spark_primary"))+row("Weekly",codexLeft(cx,"spark_secondary"));
   try{
     if(window.pywebview.api.startup_label){
       document.getElementById("startup-label").textContent = await window.pywebview.api.startup_label();

@@ -410,6 +410,9 @@ def _native_hwnd(window):
     return 0
 
 
+_BLANK_ICON = None  # transparent caption icon, created once
+
+
 def _apply_titlebar_theme(hwnd, theme="dark"):
     """Paint the native Windows caption via DWM so it matches the dashboard theme.
     Win 10 20H1+/Win 11 only; silently no-ops elsewhere."""
@@ -440,6 +443,28 @@ def _apply_titlebar_theme(hwnd, theme="dark"):
             _set(attr, value)
         except Exception:
             pass
+    # Hide the caption icon + title text: only the native min/max/close buttons remain.
+    try:
+        class _WTA(ctypes.Structure):
+            _fields_ = [("dwFlags", ctypes.c_uint), ("dwMask", ctypes.c_uint)]
+        opts = _WTA(3, 3)  # WTNCA_NODRAWCAPTION | WTNCA_NODRAWICON
+        ctypes.windll.uxtheme.SetWindowThemeAttribute(
+            ctypes.c_void_p(hwnd), 1, ctypes.byref(opts), ctypes.sizeof(opts))  # WTA_NONCLIENT
+    except Exception:
+        pass
+    # DWM can still draw the small caption icon: swap it for a transparent one (taskbar keeps the big one).
+    global _BLANK_ICON
+    try:
+        u = ctypes.windll.user32
+        if not _BLANK_ICON:
+            u.CreateIcon.restype = ctypes.c_void_p
+            and_mask = (ctypes.c_ubyte * 128)(*([0xFF] * 128))
+            xor_mask = (ctypes.c_ubyte * 128)()
+            _BLANK_ICON = u.CreateIcon(None, 32, 32, 1, 1, and_mask, xor_mask)
+        if _BLANK_ICON:
+            u.SendMessageW(ctypes.c_void_p(hwnd), 0x0080, 0, ctypes.c_void_p(_BLANK_ICON))  # WM_SETICON small
+    except Exception:
+        pass
 
 
 def _title_loop(icon):
@@ -472,8 +497,7 @@ def _title_loop(icon):
                 elif p < 85:
                     alerted.discard(key)
             cx = u.get("codex") or {}
-            for key, lbl in (("primary", "5h"), ("secondary", "weekly"),
-                             ("spark_primary", "Spark 5h"), ("spark_secondary", "Spark weekly")):
+            for key, lbl in (("primary", "5h"), ("secondary", "weekly")):
                 lim = cx.get(key)
                 if not lim or lim.get("used_percent") is None:
                     continue
