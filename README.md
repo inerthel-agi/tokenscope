@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/tokenscope-logo.png" alt="TokenScope logo" width="140" />
+  <img src="tauri/icons/icon.png" alt="TokenScope logo" width="128" />
 </p>
 
 # TokenScope
@@ -13,7 +13,7 @@ with manual import and stored history (`frontend/`, `backend/`).
 
 Desktop app:
 
-- Windows 10 or 11 with the WebView2 runtime. The title bar matches the page colors on Windows 11 only.
+- Windows 10 or 11 with the WebView2 runtime.
 - To build: stable Rust toolchain. TODO: no minimum Rust version is pinned.
 
 Web app:
@@ -23,6 +23,8 @@ Web app:
 - Node.js with `yarn` or `npm` for `frontend/`.
 
 ## Install
+
+Desktop app: download `TokenScope-Tauri.exe` from the [latest release](https://github.com/inerthel-agi/tokenscope/releases/latest). It is a single executable with no installer.
 
 Desktop app, from source:
 
@@ -52,7 +54,7 @@ yarn start
 
 Start `tokenscope.exe`:
 
-- The dashboard window opens. Closing it keeps the app in the tray.
+- The dashboard window opens. Drag its top bar to move it; the bar's buttons minimize, maximize and close it. Closing it keeps the app in the tray.
 - Left-click the tray icon to open the quota popup. Right-click it for **Open dashboard** and **Quit**.
 - `tokenscope.exe --minimized` starts in the tray only. The popup's **Start with Windows** option registers this command.
 - Select a range (`24h`, `7d`, `30d`, `90d`, `life`) and a tool in the sidebar.
@@ -86,7 +88,7 @@ Environment variables:
 
 | Name | Default | Effect |
 | --- | --- | --- |
-| `TOKENSCOPE_DIR` | `~/.tokenscope` | Theme, quota cache and `pricing.json` location |
+| `TOKENSCOPE_DIR` | `~/.tokenscope` | Location of the theme, quota cache, `pricing.json` and `powerbi.json` (last Power BI export folder) |
 | `TOKENSCOPE_CLAUDE_DIR` | `~/.claude` | Claude Code data directory |
 | `TOKENSCOPE_CODEX_DIR` | `~/.codex` | Codex data directory |
 | `TOKENSCOPE_GEMINI_DIR` | `~/.gemini` | Antigravity data parent directory |
