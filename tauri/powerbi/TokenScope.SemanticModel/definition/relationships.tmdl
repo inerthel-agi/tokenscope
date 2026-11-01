@@ -1,0 +1,11 @@
+relationship usage_models
+	fromColumn: usage.model_key
+	toColumn: models.model_key
+
+relationship usage_projects
+	fromColumn: usage.project_key
+	toColumn: projects.project_key
+
+relationship usage_dates
+	fromColumn: usage.date
+	toColumn: dates.date

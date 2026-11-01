@@ -4,7 +4,9 @@ All notable changes to TokenScope are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.5.0] - 2026-11-01
+
+Major release: the desktop app is now a Rust/Tauri app and the Python desktop app is removed.
 
 ### Added
 
@@ -14,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `{"models": [{"match": "ox-alpha", "input": 3, "output": 15, "from": "2026-12-01"}]}`.
   `match` is a case-insensitive part of the model id (longest wins); `from`/`until` are optional
   local dates. Edits apply on the next refresh.
+- **Power BI export** (Tauri app): full history as a star schema of CSV files in a folder
+  picked with a native dialog (remembered in `~/.tokenscope/powerbi.json`), plus a
+  ready Power BI project (`TokenScope.pbip`, TMDL model + Overview/Projects/Models pages)
+  written on the first export only.
 - Models without a known price show a **price unknown** badge (and a count under the cost)
   instead of a silent $0.
 - Dashboard: KPI change vs the previous period, month-end budget forecast, 12-month activity
@@ -23,7 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Google's announced Gemini price changes apply on their date in the Tauri app (4 Argon $4 / $20
   from 2026-12-01; 3.6 / 3.8 Flash $1.50 / $7.50 from 2027-01-01).
-
+- The desktop window has no native title bar: the page draws its own (drag area, minimize,
+  maximize, close to tray), so no logo shows at the top while the taskbar keeps the icon.
 - **Pricing refresh (rates checked 2026-11-01).** Cost estimates now cover the current models:
   - Claude Opus 5.5 $4 / $20, Sonnet 5 / 5.5 $2 / $10, Haiku 5.5 $0.10 / $0.50 (prompts up to
     100K tokens; $0.50 / $2.50 above), Opus 5 $5 / $25, Fable / Mythos 5.1 $10 / $50.
@@ -32,8 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     $0.10 / $0.50 (cached input 0.05x on GPT-6.1). GPT-5.6 rates lowered to Sol $4 / $20,
     Terra $2 / $12, Luna $0.20 / $1.20. GPT-5.2 corrected to $1.75 / $14; GPT-5 / 5.1 added.
   - Gemini 4 Argon $2 / $10, Gemini 3.6 / 3.8 Flash $0.75 / $3.75, Gemini 3.5 Flash-Lite
-    $0.30 / $2.50, Gemini 2.5 Pro / Flash rates. Scheduled Google increases (Dec 2026 /
-    Jan 2027) are not applied yet.
+    $0.30 / $2.50, Gemini 2.5 Pro / Flash rates. The web backend does not apply Google's
+    scheduled increases (Dec 2026 / Jan 2027); the Tauri app does.
 
 ### Removed
 

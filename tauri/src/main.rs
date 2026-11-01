@@ -5,6 +5,7 @@
 mod alerts;
 mod events;
 mod paths;
+mod powerbi;
 mod pricing;
 mod util;
 
@@ -48,7 +49,7 @@ fn theme_file() -> std::path::PathBuf {
 
 /// Shared dark/light choice between the dashboard and the popup (persisted).
 #[tauri::command]
-fn theme(app: AppHandle, theme: Option<String>) -> Value {
+fn theme(theme: Option<String>) -> Value {
     let mut cur = THEME.lock().unwrap();
     if cur.is_none() {
         *cur = std::fs::read_to_string(theme_file()).ok()
@@ -60,63 +61,7 @@ fn theme(app: AppHandle, theme: Option<String>) -> Value {
         let _ = std::fs::write(theme_file(), json!({ "theme": t }).to_string());
         *cur = Some(t);
     }
-    if let Some(w) = main_window(&app) {
-        caption::paint(&w, cur.as_deref() == Some("light"));
-    }
     json!({ "theme": cur.clone().unwrap_or_else(|| "dark".into()) })
-}
-
-/// Native title bar painted exactly like the page (#000 dark / #fff light), without the
-/// icon and title text: only the native min/max/close buttons stay (Windows 11 DWM).
-#[cfg(windows)]
-mod caption {
-    use std::ffi::c_void;
-    #[link(name = "dwmapi")]
-    extern "system" {
-        fn DwmSetWindowAttribute(hwnd: *mut c_void, attr: u32, value: *const c_void, size: u32) -> i32;
-    }
-    #[link(name = "uxtheme")]
-    extern "system" {
-        fn SetWindowThemeAttribute(hwnd: *mut c_void, kind: i32, attrs: *const c_void, size: u32) -> i32;
-    }
-    #[link(name = "user32")]
-    extern "system" {
-        fn CreateIcon(inst: *mut c_void, w: i32, h: i32, planes: u8, bpp: u8, and: *const u8, xor: *const u8) -> *mut c_void;
-        fn SendMessageW(hwnd: *mut c_void, msg: u32, wparam: usize, lparam: isize) -> isize;
-    }
-    #[repr(C)]
-    struct WtaOptions {
-        flags: u32,
-        mask: u32,
-    }
-    pub fn paint(w: &tauri::WebviewWindow, light: bool) {
-        let Ok(hwnd) = w.hwnd() else { return };
-        let hwnd = hwnd.0 as *mut c_void;
-        let color: u32 = if light { 0x00FF_FFFF } else { 0 }; // COLORREF 0x00BBGGRR
-        let dark: i32 = (!light).into();
-        let hide = WtaOptions { flags: 0b11, mask: 0b11 }; // WTNCA_NODRAWCAPTION | WTNCA_NODRAWICON
-        // SAFETY: valid HWND of our own window; pointers/sizes match each attribute's type.
-        unsafe {
-            DwmSetWindowAttribute(hwnd, 20, &dark as *const _ as _, 4); // DWMWA_USE_IMMERSIVE_DARK_MODE
-            DwmSetWindowAttribute(hwnd, 35, &color as *const _ as _, 4); // DWMWA_CAPTION_COLOR
-            DwmSetWindowAttribute(hwnd, 34, &color as *const _ as _, 4); // DWMWA_BORDER_COLOR
-            SetWindowThemeAttribute(hwnd, 1, &hide as *const _ as _, 8); // WTA_NONCLIENT
-            // DWM can still draw the small caption icon: swap it for a fully transparent one
-            // (AND mask all 1s). The taskbar keeps the big icon.
-            static BLANK: std::sync::OnceLock<isize> = std::sync::OnceLock::new(); // created once
-            let blank = *BLANK.get_or_init(|| {
-                let (and, xor) = ([0xFFu8; 32 * 32 / 8], [0u8; 32 * 32 / 8]);
-                CreateIcon(std::ptr::null_mut(), 32, 32, 1, 1, and.as_ptr(), xor.as_ptr()) as isize
-            });
-            if blank != 0 {
-                SendMessageW(hwnd, 0x0080, 0, blank); // WM_SETICON, ICON_SMALL
-            }
-        }
-    }
-}
-#[cfg(not(windows))]
-mod caption {
-    pub fn paint(_: &tauri::WebviewWindow, _: bool) {}
 }
 
 // ----- "Start with Windows" (HKCU Run key, launches minimized to tray) -----
@@ -241,6 +186,37 @@ fn save_export(name: String, content: String) -> Result<String, String> {
     Ok(path.display().to_string())
 }
 
+/// Writes the Power BI star schema (whole history) to ~/Downloads/TokenScope-PowerBI.
+#[tauri::command]
+async fn export_powerbi(window: WebviewWindow) -> Result<Option<String>, String> {
+    // Ask where to save (native folder dialog), starting from the last folder used.
+    let last_file = paths::tokenscope_dir().join("powerbi.json");
+    let last = std::fs::read_to_string(&last_file).ok()
+        .and_then(|s| serde_json::from_str::<Value>(&s).ok())
+        .and_then(|v| v["folder"].as_str().map(std::path::PathBuf::from))
+        .filter(|p| p.is_dir())
+        .unwrap_or_else(|| paths::home().join("Downloads"));
+    let picked = tauri::async_runtime::spawn_blocking(move || {
+        rfd::FileDialog::new()
+            .set_title("Power BI export: choose a folder")
+            .set_directory(&last)
+            .set_parent(&window)
+            .pick_folder()
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+    let Some(dir) = picked else { return Ok(None) }; // cancelled
+    let _ = std::fs::create_dir_all(paths::tokenscope_dir());
+    let _ = std::fs::write(&last_file, json!({ "folder": dir }).to_string());
+    let dir = tauri::async_runtime::spawn_blocking(move || powerbi::export(&dir))
+        .await
+        .map_err(|e| e.to_string())?
+        .map_err(|e| e.to_string())?;
+    #[cfg(windows)]
+    let _ = std::process::Command::new("explorer").arg(&dir).spawn();
+    Ok(Some(dir.display().to_string()))
+}
+
 /// Toggle the quota popup just above the tray icon that was clicked.
 fn toggle_popup(app: &AppHandle, anchor: PhysicalPosition<f64>) {
     let Some(p) = app.get_webview_window("tray") else { return };
@@ -272,12 +248,16 @@ fn main() {
         .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![
             summary, utilization, status, theme, startup_enabled, toggle_startup, startup_label,
-            show_dashboard, quit_app, dismiss, popup_resize, open_url, save_export
+            show_dashboard, quit_app, dismiss, popup_resize, open_url, save_export, export_powerbi
         ])
         .setup(move |app| {
             let h = app.handle().clone();
             WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
                 .title("TokenScope")
+                // No native title bar: the page draws its own (drag area + 3 buttons), so no
+                // caption icon shows while the taskbar keeps the app icon.
+                .decorations(false)
+                .shadow(true)
                 .inner_size(1320.0, 900.0)
                 .min_inner_size(900.0, 600.0)
                 .background_color(tauri::window::Color(0, 0, 0, 255))

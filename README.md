@@ -58,6 +58,7 @@ Start `tokenscope.exe`:
 - Select a range (`24h`, `7d`, `30d`, `90d`, `life`) and a tool in the sidebar.
 - Click a project row to filter the whole dashboard to it. Click the project chip to clear the filter.
 - **Export CSV** and **Export JSON** save the current summary to `~/Downloads`.
+- **Export power bi** asks for a folder (the dialog opens on the last one used) and writes the whole history there: `usage.csv` (one row per date, model and project), `models.csv`, `projects.csv` and `calendar.csv`. The first export to a folder also writes a Power BI project, `TokenScope.pbip`: open it in Power BI Desktop and select **Refresh**. It has three pages (Overview, Projects, Models) and loads the CSVs with US number formats. Later exports refresh the CSVs only and keep your edits to the report.
 - A Windows notification appears when a Claude quota window reaches 90 % used, or a Codex window drops to 10 % left.
 
 Data sources, read-only:

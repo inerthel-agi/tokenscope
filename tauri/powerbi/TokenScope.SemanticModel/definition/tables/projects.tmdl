@@ -1,0 +1,21 @@
+table projects
+
+	column project_key
+		dataType: string
+		summarizeBy: none
+		sourceColumn: project_key
+
+	column project_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: project_name
+
+	partition projects = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ExportFolder & "\projects.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Headers, {{"project_key", type text}, {"project_name", type text}}, "en-US")
+				in
+				    Typed

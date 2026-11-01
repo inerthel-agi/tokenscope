@@ -591,6 +591,11 @@ pub fn aggregate(events: &[Event], days: i64, tool: Option<&str>, project: Optio
 }
 
 pub fn read_local_summary(days: i64, tool: Option<&str>, project: Option<&str>) -> Value {
+    aggregate(&load_events(days, tool), days, tool, project)
+}
+
+/// All parsed events for the window (cached per file), optionally for one tool.
+pub fn load_events(days: i64, tool: Option<&str>) -> Vec<Event> {
     // Costs are computed at parse time: drop cached files when pricing.json changed.
     static SEEN_VERSION: Mutex<u64> = Mutex::new(0);
     let v = refresh_overrides();
@@ -607,7 +612,7 @@ pub fn read_local_summary(days: i64, tool: Option<&str>, project: Option<&str>) 
     if tool.is_none() || tool == Some("antigravity") {
         events.extend(read_antigravity_events(days));
     }
-    aggregate(&events, days, tool, project)
+    events
 }
 
 #[cfg(test)]
@@ -622,5 +627,6 @@ mod tests {
             std::fs::write(format!("{dir}/rust_{days}.json"), v.to_string()).unwrap();
         }
         std::fs::write(format!("{dir}/rust_util.json"), crate::util::read_local_utilization().to_string()).unwrap();
+        crate::powerbi::export(std::path::Path::new(&dir)).unwrap();
     }
 }

@@ -1,0 +1,184 @@
+{
+  "id": 0,
+  "config": "{\"version\": \"5.43\", \"themeCollection\": {\"baseTheme\": {\"name\": \"CY24SU10\", \"version\": \"5.61\", \"type\": 2}}, \"activeSectionIndex\": 0, \"linguisticSchemaSyncVersion\": 0, \"objects\": {}}",
+  "layoutOptimization": 0,
+  "resourcePackages": [],
+  "sections": [
+    {
+      "name": "ReportSection0",
+      "displayName": "Overview",
+      "displayOption": 1,
+      "width": 1280,
+      "height": 720,
+      "filters": "[]",
+      "config": "{}",
+      "visualContainers": [
+        {
+          "x": 20,
+          "y": 10,
+          "z": 0,
+          "width": 600,
+          "height": 40,
+          "config": "{\"name\":\"38891bce75a54fcbb873\",\"layouts\":[{\"id\":0,\"position\":{\"x\":20,\"y\":10,\"width\":600,\"height\":40}}],\"singleVisual\":{\"visualType\":\"textbox\",\"projections\":{},\"prototypeQuery\":{\"Version\":2,\"From\":[],\"Select\":[]},\"objects\":{},\"textContent\":\"TokenScope · usage\",\"textStyle\":{\"fontSize\":20,\"bold\":true,\"color\":\"#222222\"}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[],\"Select\":[]}}}]}",
+          "dataTransforms": "{}"
+        },
+        {
+          "x": 20,
+          "y": 60,
+          "z": 1,
+          "width": 290,
+          "height": 110,
+          "config": "{\"name\":\"389e3443314445bb84d0\",\"layouts\":[{\"id\":0,\"position\":{\"x\":20,\"y\":60,\"width\":290,\"height\":110}}],\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"Cost\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"}]},\"objects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"\\\"Cost\\\"\"}}}}}]}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"}]}}}]}",
+          "dataTransforms": "{}"
+        },
+        {
+          "x": 325,
+          "y": 60,
+          "z": 2,
+          "width": 290,
+          "height": 110,
+          "config": "{\"name\":\"b691d6e3f8314c039da0\",\"layouts\":[{\"id\":0,\"position\":{\"x\":325,\"y\":60,\"width\":290,\"height\":110}}],\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"Tokens\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"Tokens\"},\"Name\":\"Tokens\",\"NativeReferenceName\":\"Tokens\"}]},\"objects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"\\\"Tokens\\\"\"}}}}}]}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"Tokens\"},\"Name\":\"Tokens\",\"NativeReferenceName\":\"Tokens\"}]}}}]}",
+          "dataTransforms": "{}"
+        },
+        {
+          "x": 630,
+          "y": 60,
+          "z": 3,
+          "width": 290,
+          "height": 110,
+          "config": "{\"name\":\"4a4eecff092b4feda122\",\"layouts\":[{\"id\":0,\"position\":{\"x\":630,\"y\":60,\"width\":290,\"height\":110}}],\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"Calls\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"Calls\"},\"Name\":\"Calls\",\"NativeReferenceName\":\"Calls\"}]},\"objects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"\\\"Calls\\\"\"}}}}}]}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"Calls\"},\"Name\":\"Calls\",\"NativeReferenceName\":\"Calls\"}]}}}]}",
+          "dataTransforms": "{}"
+        },
+        {
+          "x": 935,
+          "y": 60,
+          "z": 4,
+          "width": 325,
+          "height": 110,
+          "config": "{\"name\":\"432d8be9d4d4402b8aa0\",\"layouts\":[{\"id\":0,\"position\":{\"x\":935,\"y\":60,\"width\":325,\"height\":110}}],\"singleVisual\":{\"visualType\":\"card\",\"projections\":{\"Values\":[{\"queryRef\":\"Cost per Call\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"Cost per Call\"},\"Name\":\"Cost per Call\",\"NativeReferenceName\":\"Cost per Call\"}]},\"objects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"\\\"Cost per call\\\"\"}}}}}]}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"Cost per Call\"},\"Name\":\"Cost per Call\",\"NativeReferenceName\":\"Cost per Call\"}]}}}]}",
+          "dataTransforms": "{}"
+        },
+        {
+          "x": 20,
+          "y": 185,
+          "z": 5,
+          "width": 760,
+          "height": 300,
+          "config": "{\"name\":\"41591116124047dea3e7\",\"layouts\":[{\"id\":0,\"position\":{\"x\":20,\"y\":185,\"width\":760,\"height\":300}}],\"singleVisual\":{\"visualType\":\"lineChart\",\"projections\":{\"Category\":[{\"queryRef\":\"date\",\"active\":true}],\"Y\":[{\"queryRef\":\"Cost\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"dates\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"date\"},\"Name\":\"date\",\"NativeReferenceName\":\"date\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"}]},\"objects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"\\\"Daily cost\\\"\"}}}}}]}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"dates\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"date\"},\"Name\":\"date\",\"NativeReferenceName\":\"date\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"}]}}}]}",
+          "dataTransforms": "{}"
+        },
+        {
+          "x": 795,
+          "y": 185,
+          "z": 6,
+          "width": 465,
+          "height": 300,
+          "config": "{\"name\":\"21fc188617cd435184bb\",\"layouts\":[{\"id\":0,\"position\":{\"x\":795,\"y\":185,\"width\":465,\"height\":300}}],\"singleVisual\":{\"visualType\":\"donutChart\",\"projections\":{\"Category\":[{\"queryRef\":\"tool\",\"active\":true}],\"Y\":[{\"queryRef\":\"Cost\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"models\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"tool\"},\"Name\":\"tool\",\"NativeReferenceName\":\"tool\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"}]},\"objects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"\\\"Cost by tool\\\"\"}}}}}]}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"models\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"tool\"},\"Name\":\"tool\",\"NativeReferenceName\":\"tool\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"}]}}}]}",
+          "dataTransforms": "{}"
+        },
+        {
+          "x": 20,
+          "y": 500,
+          "z": 7,
+          "width": 760,
+          "height": 205,
+          "config": "{\"name\":\"9104398049174852a9f1\",\"layouts\":[{\"id\":0,\"position\":{\"x\":20,\"y\":500,\"width\":760,\"height\":205}}],\"singleVisual\":{\"visualType\":\"clusteredBarChart\",\"projections\":{\"Category\":[{\"queryRef\":\"model\",\"active\":true}],\"Y\":[{\"queryRef\":\"Cost\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"models\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"model\"},\"Name\":\"model\",\"NativeReferenceName\":\"model\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"}]},\"objects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"\\\"Cost by model\\\"\"}}}}}]}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"models\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"model\"},\"Name\":\"model\",\"NativeReferenceName\":\"model\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"}]}}}]}",
+          "dataTransforms": "{}"
+        },
+        {
+          "x": 795,
+          "y": 500,
+          "z": 8,
+          "width": 465,
+          "height": 205,
+          "config": "{\"name\":\"9f71e92d524e4ad3b9ee\",\"layouts\":[{\"id\":0,\"position\":{\"x\":795,\"y\":500,\"width\":465,\"height\":205}}],\"singleVisual\":{\"visualType\":\"slicer\",\"projections\":{\"Values\":[{\"queryRef\":\"month_label\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"dates\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"month_label\"},\"Name\":\"month_label\",\"NativeReferenceName\":\"month_label\"}]},\"objects\":{},\"slicerType\":\"dropdown\"}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"dates\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"month_label\"},\"Name\":\"month_label\",\"NativeReferenceName\":\"month_label\"}]}}}]}",
+          "dataTransforms": "{}"
+        }
+      ]
+    },
+    {
+      "name": "ReportSection1",
+      "displayName": "Projects",
+      "displayOption": 1,
+      "width": 1280,
+      "height": 720,
+      "filters": "[]",
+      "config": "{}",
+      "visualContainers": [
+        {
+          "x": 20,
+          "y": 20,
+          "z": 0,
+          "width": 760,
+          "height": 680,
+          "config": "{\"name\":\"1861913a024a4ff186b3\",\"layouts\":[{\"id\":0,\"position\":{\"x\":20,\"y\":20,\"width\":760,\"height\":680}}],\"singleVisual\":{\"visualType\":\"tableEx\",\"projections\":{\"Values\":[{\"queryRef\":\"project_name\",\"active\":true},{\"queryRef\":\"Cost\",\"active\":true},{\"queryRef\":\"Tokens\",\"active\":true},{\"queryRef\":\"Calls\",\"active\":true},{\"queryRef\":\"Active Days\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"projects\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"project_name\"},\"Name\":\"project_name\",\"NativeReferenceName\":\"project_name\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Tokens\"},\"Name\":\"Tokens\",\"NativeReferenceName\":\"Tokens\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Calls\"},\"Name\":\"Calls\",\"NativeReferenceName\":\"Calls\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Active Days\"},\"Name\":\"Active Days\",\"NativeReferenceName\":\"Active Days\"}]},\"objects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"\\\"Projects\\\"\"}}}}}]}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"projects\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"project_name\"},\"Name\":\"project_name\",\"NativeReferenceName\":\"project_name\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Tokens\"},\"Name\":\"Tokens\",\"NativeReferenceName\":\"Tokens\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Calls\"},\"Name\":\"Calls\",\"NativeReferenceName\":\"Calls\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Active Days\"},\"Name\":\"Active Days\",\"NativeReferenceName\":\"Active Days\"}]}}}]}",
+          "dataTransforms": "{}"
+        },
+        {
+          "x": 795,
+          "y": 20,
+          "z": 1,
+          "width": 465,
+          "height": 680,
+          "config": "{\"name\":\"d25bebca8a2c46c994ec\",\"layouts\":[{\"id\":0,\"position\":{\"x\":795,\"y\":20,\"width\":465,\"height\":680}}],\"singleVisual\":{\"visualType\":\"clusteredBarChart\",\"projections\":{\"Category\":[{\"queryRef\":\"project_name\",\"active\":true}],\"Y\":[{\"queryRef\":\"Cost\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"projects\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"project_name\"},\"Name\":\"project_name\",\"NativeReferenceName\":\"project_name\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"}]},\"objects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"\\\"Cost by project\\\"\"}}}}}]}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"projects\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"project_name\"},\"Name\":\"project_name\",\"NativeReferenceName\":\"project_name\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"}]}}}]}",
+          "dataTransforms": "{}"
+        }
+      ]
+    },
+    {
+      "name": "ReportSection2",
+      "displayName": "Models",
+      "displayOption": 1,
+      "width": 1280,
+      "height": 720,
+      "filters": "[]",
+      "config": "{}",
+      "visualContainers": [
+        {
+          "x": 20,
+          "y": 20,
+          "z": 0,
+          "width": 1240,
+          "height": 330,
+          "config": "{\"name\":\"9f6f35bbf7ba45f8af14\",\"layouts\":[{\"id\":0,\"position\":{\"x\":20,\"y\":20,\"width\":1240,\"height\":330}}],\"singleVisual\":{\"visualType\":\"tableEx\",\"projections\":{\"Values\":[{\"queryRef\":\"tool\",\"active\":true},{\"queryRef\":\"model\",\"active\":true},{\"queryRef\":\"price_family\",\"active\":true},{\"queryRef\":\"Cost\",\"active\":true},{\"queryRef\":\"Tokens\",\"active\":true},{\"queryRef\":\"Calls\",\"active\":true},{\"queryRef\":\"Cost per Call\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"models\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"tool\"},\"Name\":\"tool\",\"NativeReferenceName\":\"tool\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"model\"},\"Name\":\"model\",\"NativeReferenceName\":\"model\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"price_family\"},\"Name\":\"price_family\",\"NativeReferenceName\":\"price_family\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Tokens\"},\"Name\":\"Tokens\",\"NativeReferenceName\":\"Tokens\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Calls\"},\"Name\":\"Calls\",\"NativeReferenceName\":\"Calls\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost per Call\"},\"Name\":\"Cost per Call\",\"NativeReferenceName\":\"Cost per Call\"}]},\"objects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"\\\"Models\\\"\"}}}}}]}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"models\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"tool\"},\"Name\":\"tool\",\"NativeReferenceName\":\"tool\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"model\"},\"Name\":\"model\",\"NativeReferenceName\":\"model\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"price_family\"},\"Name\":\"price_family\",\"NativeReferenceName\":\"price_family\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Tokens\"},\"Name\":\"Tokens\",\"NativeReferenceName\":\"Tokens\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Calls\"},\"Name\":\"Calls\",\"NativeReferenceName\":\"Calls\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost per Call\"},\"Name\":\"Cost per Call\",\"NativeReferenceName\":\"Cost per Call\"}]}}}]}",
+          "dataTransforms": "{}"
+        },
+        {
+          "x": 20,
+          "y": 370,
+          "z": 1,
+          "width": 1240,
+          "height": 330,
+          "config": "{\"name\":\"d67791ee63154d54a706\",\"layouts\":[{\"id\":0,\"position\":{\"x\":20,\"y\":370,\"width\":1240,\"height\":330}}],\"singleVisual\":{\"visualType\":\"clusteredBarChart\",\"projections\":{\"Category\":[{\"queryRef\":\"month_label\",\"active\":true}],\"Y\":[{\"queryRef\":\"Cost\",\"active\":true}],\"Series\":[{\"queryRef\":\"tool\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"dates\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0},{\"Name\":\"s2\",\"Entity\":\"models\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"month_label\"},\"Name\":\"month_label\",\"NativeReferenceName\":\"month_label\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s2\"}},\"Property\":\"tool\"},\"Name\":\"tool\",\"NativeReferenceName\":\"tool\"}]},\"objects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"\\\"Monthly cost by tool\\\"\"}}}}}]}}}",
+          "filters": "[]",
+          "query": "{\"Commands\":[{\"SemanticQueryDataShapeCommand\":{\"Query\":{\"Version\":2,\"From\":[{\"Name\":\"s0\",\"Entity\":\"dates\",\"Type\":0},{\"Name\":\"s1\",\"Entity\":\"usage\",\"Type\":0},{\"Name\":\"s2\",\"Entity\":\"models\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s0\"}},\"Property\":\"month_label\"},\"Name\":\"month_label\",\"NativeReferenceName\":\"month_label\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s1\"}},\"Property\":\"Cost\"},\"Name\":\"Cost\",\"NativeReferenceName\":\"Cost\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"s2\"}},\"Property\":\"tool\"},\"Name\":\"tool\",\"NativeReferenceName\":\"tool\"}]}}}]}",
+          "dataTransforms": "{}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+table models
+
+	column model_key
+		dataType: string
+		summarizeBy: none
+		sourceColumn: model_key
+
+	column tool
+		dataType: string
+		summarizeBy: none
+		sourceColumn: tool
+
+	column model
+		dataType: string
+		summarizeBy: none
+		sourceColumn: model
+
+	column price_family
+		dataType: string
+		summarizeBy: none
+		sourceColumn: price_family
+
+	column input_usd_per_mtok
+		dataType: double
+		formatString: \$#,0.00
+		summarizeBy: none
+		sourceColumn: input_usd_per_mtok
+
+	column output_usd_per_mtok
+		dataType: double
+		formatString: \$#,0.00
+		summarizeBy: none
+		sourceColumn: output_usd_per_mtok
+
+	column priced
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: priced
+
+	partition models = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ExportFolder & "\models.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Headers, {{"model_key", type text}, {"tool", type text}, {"model", type text}, {"price_family", type text}, {"input_usd_per_mtok", type number}, {"output_usd_per_mtok", type number}, {"priced", type logical}}, "en-US")
+				in
+				    Typed

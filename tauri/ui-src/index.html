@@ -50,6 +50,18 @@
 
   /* ---- shell: sidebar + main ---- */
   .app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+  /* ---- app title bar (desktop app only: the window has no native caption) ---- */
+  .tbar{display:none}
+  html.tauri .tbar{display:flex;justify-content:flex-end;position:fixed;top:0;left:0;right:0;height:32px;z-index:50;
+      background:linear-gradient(90deg,var(--sideBg) 235px,var(--border) 235px,var(--border) 236px,var(--bg) 236px)}
+  html.tauri body{padding-top:32px}
+  html.tauri .side{top:32px;height:calc(100vh - 32px)}
+  .tbar button{width:46px;height:32px;border:0;background:transparent;color:var(--tx2);cursor:default;
+      display:flex;align-items:center;justify-content:center;transition:background .1s,color .1s}
+  .tbar button:hover{background:var(--segHover);color:var(--tx)}
+  .tbar button.x:hover{background:#e81123;color:#fff}
+  .tbar svg{width:10px;height:10px;stroke:currentColor;stroke-width:1;fill:none;shape-rendering:crispEdges}
+  @media(max-width:820px){ html.tauri .tbar{background:var(--bg)} }
   .side{position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:22px;
         padding:22px 16px;border-right:1px solid var(--border);background:var(--sideBg)}
   .brand{display:flex;flex-direction:column;gap:4px;padding:0 6px}
@@ -238,6 +250,21 @@
 </style>
 </head>
 <body>
+<div class="tbar" data-tauri-drag-region>
+  <button type="button" id="tb-min" aria-label="Minimize"><svg viewBox="0 0 10 10"><path d="M0 5.5h10"/></svg></button>
+  <button type="button" id="tb-max" aria-label="Maximize"><svg viewBox="0 0 10 10"><path d="M.5.5h9v9h-9z"/></svg></button>
+  <button type="button" class="x" id="tb-close" aria-label="Close"><svg viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10"/></svg></button>
+</div>
+<script>
+// Desktop app: own title bar (drag area + window buttons); close hides to the tray.
+if(window.__TAURI__){
+  document.documentElement.classList.add("tauri");
+  const w=window.__TAURI__.window.getCurrentWindow();
+  document.getElementById("tb-min").onclick=()=>w.minimize();
+  document.getElementById("tb-max").onclick=()=>w.toggleMaximize();
+  document.getElementById("tb-close").onclick=()=>w.close();
+}
+</script>
 <div class="app">
   <aside class="side">
     <div class="brand">
@@ -276,6 +303,7 @@
         <div class="seg" id="theme"><button data-th="dark">dark</button><button data-th="light">light</button></div>
       </div>
       <div class="seg" id="export" title="export current summary"><button data-x="csv">export csv</button><button data-x="json">export json</button></div>
+      <div class="seg" title="full history as CSV tables + a Power BI report, in a folder you choose"><button id="pbi">export power bi</button></div>
       <a class="upd" id="upd" target="_blank" rel="noopener noreferrer"></a>
       <a class="gh" href="https://github.com/inerthel-agi" target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -355,7 +383,7 @@
 </div>
 
 <script>
-const APP_VERSION="1.4.1", REPO="stealthsrc/tokenscope";
+const APP_VERSION="1.5.0", REPO="stealthsrc/tokenscope";
 const TOOL_LABEL={claude_api:"Claude",codex:"Codex",antigravity:"Antigravity"};
 let DAYS=30, TOOL="", LAST_S=null, LAST_U=null, LOADING=false;
 const SORT={proj:{k:null,dir:-1}, mdl:{k:null,dir:-1}};
@@ -379,7 +407,7 @@ const I18N={
     bud_real:"real spend (api)", bud_est:"est. (subscription)", today:"today", month:"this month",
     over:" · over {x}", daily_budget:"daily budget ($)", monthly_budget:"monthly budget ($)",
     now:"now", in_prefix:"in", u_d:"d", u_h:"h", u_m:"m",
-    overview:"overview", all_tools:"all tools", n_calls:"{n} calls", vs_prev:"vs prev. {r}", new_period:"new", price_unknown:"price unknown", n_unpriced:"{n} unpriced",
+    overview:"overview", all_tools:"all tools", n_calls:"{n} calls", vs_prev:"vs prev. {r}", new_period:"new", price_unknown:"price unknown", n_unpriced:"{n} unpriced", pbi_working:"exporting…", pbi_done:"export saved", pbi_desktop_only:"desktop app only",
     price_unknown_tip:"No list price for this model: add it to ~/.tokenscope/pricing.json",
     forecast:"month-end forecast", cal_sum:"{d} active days · {n} tokens", clear_project:"clear project filter",
     about_body:"TokenScope was built to monitor token consumption and usage across Claude Code and Codex — to see, in one place and in real time, how many tokens I burn per project and per model, what it costs, and how much of my subscription quota is left. Local-first: it only reads my own session files, with no telemetry.",
@@ -399,7 +427,7 @@ const I18N={
     bud_real:"dépense réelle (api)", bud_est:"est. (abonnement)", today:"aujourd'hui", month:"ce mois",
     over:" · dépassé de {x}", daily_budget:"budget quotidien ($)", monthly_budget:"budget mensuel ($)",
     now:"maintenant", in_prefix:"dans", u_d:"j", u_h:"h", u_m:"m",
-    overview:"vue d'ensemble", all_tools:"tous les outils", n_calls:"{n} appels", vs_prev:"vs {r} préc.", new_period:"nouveau", price_unknown:"prix inconnu", n_unpriced:"{n} sans prix",
+    overview:"vue d'ensemble", all_tools:"tous les outils", n_calls:"{n} appels", vs_prev:"vs {r} préc.", new_period:"nouveau", price_unknown:"prix inconnu", n_unpriced:"{n} sans prix", pbi_working:"export…", pbi_done:"export enregistré", pbi_desktop_only:"app desktop uniquement",
     price_unknown_tip:"Pas de tarif connu pour ce modèle : ajoute-le dans ~/.tokenscope/pricing.json",
     forecast:"prévision fin de mois", cal_sum:"{d} jours actifs · {n} tokens", clear_project:"retirer le filtre projet",
     about_body:"TokenScope a été créé pour monitorer la consommation et l'usage des tokens sur Claude Code et Codex — voir, au même endroit et en temps réel, combien de tokens je consomme par projet et par modèle, ce que ça coûte, et combien il reste de mon quota d'abonnement. Local-first : il lit uniquement mes propres fichiers de session, sans aucune télémétrie.",
@@ -736,6 +764,15 @@ function download(name,blob){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href),3000);
 }
+// Power BI: the desktop app writes a star schema (usage/models/projects/calendar CSVs).
+document.getElementById("pbi").addEventListener("click",async e=>{
+  const b=e.currentTarget, txt=b.textContent;
+  if(!window.__TAURI__){ b.textContent=t("pbi_desktop_only"); setTimeout(()=>b.textContent=txt,2500); return; }
+  b.disabled=true; b.textContent=t("pbi_working");
+  try{ const dir=await window.__TAURI__.core.invoke("export_powerbi"); b.textContent=dir?t("pbi_done"):txt; }
+  catch(err){ b.textContent=t("error",{m:String(err)}); }
+  setTimeout(()=>{ b.textContent=txt; b.disabled=false; },2500);
+});
 document.getElementById("export").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b||!LAST_S)return;
   const stamp=localDay(new Date()), range=rangeLabel(DAYS)+(TOOL?"_"+TOOL:"");

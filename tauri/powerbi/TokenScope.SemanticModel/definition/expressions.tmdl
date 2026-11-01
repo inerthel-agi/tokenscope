@@ -1,0 +1,2 @@
+expression ExportFolder = "{{EXPORT_FOLDER}}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	annotation PBI_ResultType = Text
